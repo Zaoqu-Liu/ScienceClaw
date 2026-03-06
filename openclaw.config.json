@@ -1,0 +1,114 @@
+{
+  "$schema": "https://docs.openclaw.ai/config-schema.json",
+  "models": {
+    "providers": {
+      "openai": {
+        "baseUrl": "https://yunwu.ai/v1",
+        "apiKey": "sk-zc5Ra2ML0YtaIxLeYe5BrPHTjc36YJkMPDILmafEOUVN5GSV",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "gpt-4o",
+            "name": "GPT-4o"
+          },
+          {
+            "id": "o4-mini",
+            "name": "o4 Mini"
+          }
+        ]
+      },
+      "claude": {
+        "baseUrl": "https://yunwu.ai/v1",
+        "apiKey": "sk-ZJgY8JJhvwPcfAsd5l9xmakOVSoqtqKezhRJhpmynwUpX2XK",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "claude-sonnet-4-6",
+            "name": "Claude Sonnet 4.6"
+          },
+          {
+            "id": "claude-opus-4-6",
+            "name": "Claude Opus 4.6"
+          }
+        ]
+      },
+      "gemini": {
+        "baseUrl": "https://yunwu.ai/v1",
+        "apiKey": "sk-RtP6ftVgFxeWgrYQALwCkpD3DASFccQz2PlCBzWHs47b3Ie3",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "gemini-2.5-flash",
+            "name": "Gemini 2.5 Flash"
+          },
+          {
+            "id": "gemini-2.5-pro",
+            "name": "Gemini 2.5 Pro"
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": "claude/claude-sonnet-4-6",
+      "workspace": "~/.scienceclaw/workspace",
+      "bootstrapMaxChars": 30000,
+      "bootstrapTotalMaxChars": 200000,
+      "contextPruning": {
+        "mode": "cache-ttl",
+        "ttl": "1h"
+      },
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "heartbeat": {
+        "every": "30m"
+      }
+    },
+    "list": [
+      {
+        "id": "scienceclaw",
+        "default": true,
+        "name": "ScienceClaw",
+        "model": "claude/claude-sonnet-4-6",
+        "identity": {
+          "name": "ScienceClaw",
+          "theme": "AI Research Colleague",
+          "emoji": "🔬"
+        },
+        "tools": {
+          "profile": "full"
+        }
+      }
+    ]
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token",
+      "token": "88e208f802a8a1cc8c1848fb193d459cc07ad3ded15aa38a"
+    }
+  },
+  "skills": {
+    "load": {
+      "extraDirs": [
+        "/Users/liuzaoqu/Desktop/develop/sogen/scienceclaw/skills"
+      ]
+    },
+    "limits": {
+      "maxSkillsLoadedPerSource": 300,
+      "maxCandidatesPerRoot": 300
+    }
+  },
+  "meta": {
+    "lastTouchedVersion": "2026.3.3",
+    "lastTouchedAt": "2026-03-06T10:03:52.265Z"
+  }
+}

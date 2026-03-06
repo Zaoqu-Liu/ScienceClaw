@@ -1,0 +1,36 @@
+name: Feature Request
+description: Suggest a new feature for ScienceClaw
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature description
+      description: A clear description of the feature you'd like.
+      placeholder: Describe the feature.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: Explain the problem this feature would solve or the workflow it enables.
+      placeholder: As a researcher, I need to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: How you think this could be implemented.
+      placeholder: Describe your proposed approach.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative solutions or workarounds you've considered.
+      placeholder: Describe alternatives.

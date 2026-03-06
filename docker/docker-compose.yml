@@ -1,0 +1,13 @@
+services:
+  sandbox:
+    build:
+      context: .
+      dockerfile: Dockerfile.sandbox
+    volumes:
+      - ../workspace:/work
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2"
+    network_mode: none

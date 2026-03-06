@@ -1,0 +1,133 @@
+#!/bin/bash
+# ScienceClaw — Your AI Research Colleague
+# Wrapper: source .env, set config path, auto-manage gateway, delegate to openclaw.
+
+set -e
+
+_resolve() {
+  local src="${BASH_SOURCE[0]}"
+  while [ -L "$src" ]; do
+    local dir="$(cd -P "$(dirname "$src")" && pwd)"
+    src="$(readlink "$src")"
+    [[ "$src" != /* ]] && src="$dir/$src"
+  done
+  cd -P "$(dirname "$src")" && pwd
+}
+
+ROOT="$(_resolve)"
+export SCIENCECLAW_ROOT="$ROOT"
+export OPENCLAW_CONFIG_PATH="$ROOT/openclaw.config.json"
+
+[ -f "$ROOT/.env" ] && set -a && source "$ROOT/.env" && set +a
+
+OPENCLAW="$ROOT/node_modules/openclaw/openclaw.mjs"
+GW_PORT=18789
+GW_LOG="/tmp/scienceclaw-gateway.log"
+GW_PID_FILE="/tmp/scienceclaw-gateway.pid"
+
+if [ ! -f "$OPENCLAW" ]; then
+  echo ""
+  echo "  ScienceClaw not installed yet. Run:"
+  echo "    cd $ROOT && bash scripts/setup.sh"
+  echo ""
+  exit 1
+fi
+
+oc() { exec node "$OPENCLAW" "$@"; }
+oc_bg() { node "$OPENCLAW" "$@"; }
+
+is_gateway_running() {
+  lsof -i :"$GW_PORT" -sTCP:LISTEN >/dev/null 2>&1
+}
+
+wait_for_gateway() {
+  local i=0
+  while [ $i -lt 20 ]; do
+    is_gateway_running && return 0
+    sleep 1
+    i=$((i + 1))
+  done
+  return 1
+}
+
+ensure_gateway() {
+  if is_gateway_running; then
+    return 0
+  fi
+  echo "  🚀 Starting Gateway on port $GW_PORT ..."
+  nohup node "$OPENCLAW" gateway run --force --port "$GW_PORT" \
+    > "$GW_LOG" 2>&1 &
+  local pid=$!
+  echo "$pid" > "$GW_PID_FILE"
+  if wait_for_gateway; then
+    echo "  ✅ Gateway ready (PID $pid)"
+    return 0
+  else
+    echo "  ❌ Gateway failed to start. Log: $GW_LOG"
+    echo "     Tail of log:"
+    tail -10 "$GW_LOG" 2>/dev/null | sed 's/^/     /'
+    return 1
+  fi
+}
+
+stop_gateway() {
+  if [ -f "$GW_PID_FILE" ]; then
+    local pid
+    pid=$(cat "$GW_PID_FILE")
+    if kill -0 "$pid" 2>/dev/null; then
+      kill "$pid" 2>/dev/null
+      sleep 1
+      kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
+      echo "  ✅ Gateway stopped (PID $pid)"
+    else
+      echo "  ⚠️  PID $pid already gone"
+    fi
+    rm -f "$GW_PID_FILE"
+  elif is_gateway_running; then
+    local pid
+    pid=$(lsof -i :"$GW_PORT" -sTCP:LISTEN -t 2>/dev/null | head -1)
+    if [ -n "$pid" ]; then
+      kill "$pid" 2>/dev/null; sleep 1
+      kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
+      echo "  ✅ Gateway stopped (PID $pid)"
+    fi
+  else
+    echo "  ⚠️  No gateway running"
+  fi
+}
+
+case "${1:-}" in
+  setup)
+    bash "$ROOT/scripts/setup.sh"
+    ;;
+  run)
+    ensure_gateway || exit 1
+    echo ""
+    oc tui
+    ;;
+  tui)
+    ensure_gateway || exit 1
+    echo ""
+    shift
+    oc tui "$@"
+    ;;
+  start)
+    shift
+    oc gateway run --force --port "$GW_PORT" "$@"
+    ;;
+  stop)
+    stop_gateway
+    ;;
+  status)
+    if is_gateway_running; then
+      local_pid=$(lsof -i :"$GW_PORT" -sTCP:LISTEN -t 2>/dev/null | head -1)
+      echo "  ✅ Gateway running (PID ${local_pid:-?}, port $GW_PORT)"
+      echo "  📋 Log: $GW_LOG"
+    else
+      echo "  ⬜ Gateway not running"
+    fi
+    ;;
+  *)
+    oc "$@"
+    ;;
+esac
