@@ -1,0 +1,42 @@
+{
+  "name": "scienceclaw",
+  "version": "0.2.0",
+  "description": "AI Research Colleague -- SCIENCE.md + 264 skills on OpenClaw. Zero custom code.",
+  "type": "module",
+  "bin": {
+    "scienceclaw": "./scienceclaw"
+  },
+  "scripts": {
+    "start": "./scienceclaw run",
+    "tui": "./scienceclaw tui",
+    "setup": "bash scripts/setup.sh",
+    "test": "bash tests/smoke_test.sh",
+    "stop": "./scienceclaw stop"
+  },
+  "keywords": [
+    "ai",
+    "research",
+    "science",
+    "agent",
+    "openclaw",
+    "pubmed",
+    "literature-search",
+    "bioinformatics"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zaoqu-Liu/ScienceClaw.git"
+  },
+  "homepage": "https://github.com/Zaoqu-Liu/ScienceClaw",
+  "bugs": {
+    "url": "https://github.com/Zaoqu-Liu/ScienceClaw/issues"
+  },
+  "author": "LIU Zaoqu <liuzaoqu@163.com>",
+  "dependencies": {
+    "openclaw": "file:../openclaw"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "license": "MIT"
+}

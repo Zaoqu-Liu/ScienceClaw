@@ -1,0 +1,58 @@
+FROM python:3.11-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV JULIA_VERSION=1.10.7
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gfortran \
+    liblapack-dev \
+    libblas-dev \
+    libhdf5-dev \
+    libxml2-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libfontconfig1-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    r-base \
+    r-base-dev \
+    wget \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python scientific packages
+RUN pip install --no-cache-dir \
+    numpy \
+    pandas \
+    scipy \
+    matplotlib \
+    seaborn \
+    scikit-learn \
+    statsmodels \
+    biopython \
+    scanpy \
+    plotly
+
+# R packages
+RUN R -e "install.packages(c('ggplot2', 'tidyverse', 'survival', 'survminer', 'BiocManager'), repos='https://cloud.r-project.org/')" \
+    && R -e "BiocManager::install(c('DESeq2', 'ComplexHeatmap'), ask=FALSE, update=FALSE)"
+
+# Julia
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then JULIA_ARCH="x86_64"; else JULIA_ARCH="aarch64"; fi && \
+    wget -q "https://julialang-s3.julialang.org/bin/linux/${JULIA_ARCH}/${JULIA_VERSION%.*}/julia-${JULIA_VERSION}-linux-${JULIA_ARCH}.tar.gz" -O /tmp/julia.tar.gz && \
+    tar -xzf /tmp/julia.tar.gz -C /opt && \
+    ln -s /opt/julia-${JULIA_VERSION}/bin/julia /usr/local/bin/julia && \
+    rm /tmp/julia.tar.gz
+
+# Non-root user
+RUN useradd -m -s /bin/bash sandbox
+WORKDIR /work
+RUN chown sandbox:sandbox /work
+USER sandbox
