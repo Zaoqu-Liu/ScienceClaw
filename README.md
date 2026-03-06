@@ -293,7 +293,7 @@ Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before
 
 **LIU Zaoqu**
 
-Institute of AI-Powered Medicine (IAPM), Guangdong Provincial People's Hospital · [pi-HuB](https://github.com/pi-HuB)
+International Academy of Phronesis Medicine (Guangdong) · [π-HuB infrastructure](https://github.com/pi-HuB)
 
 Contact: [liuzaoqu@163.com](mailto:liuzaoqu@163.com)
 
