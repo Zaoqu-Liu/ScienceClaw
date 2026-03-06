@@ -3,9 +3,6 @@
 <img src="assets/hero-banner.png" width="800" alt="ScienceClaw Hero Banner" />
 
 <br />
-<br />
-
-<img src="assets/ScienceClaw-Logo.png" width="200" alt="ScienceClaw Logo" />
 
 # ScienceClaw
 
@@ -65,11 +62,15 @@ ScienceClaw conducted a systematic literature search across PubMed, Semantic Sch
 
 ### Prerequisites
 
+<div align="center">
+
 | Requirement | Version | Notes |
 |-------------|---------|-------|
 | Node.js | >= 22 | Required |
 | Python | >= 3.10 | For code execution (R, Julia optional) |
 | Docker | Latest | Optional — for containerized deployment |
+
+</div>
 
 ### Step 1 — Clone and configure
 
@@ -103,6 +104,8 @@ scienceclaw ask "Search TREM2 in Alzheimer's disease and summarize recent findin
 
 ## What It Can Do
 
+<div align="center">
+
 | Capability | Details |
 |------------|---------|
 | **Search literature** | 15+ sources — PubMed, Semantic Scholar, OpenAlex, Europe PMC, and more |
@@ -111,6 +114,8 @@ scienceclaw ask "Search TREM2 in Alzheimer's disease and summarize recent findin
 | **Generate figures** | Journal-spec palettes (NPG, Lancet, JCO, NEJM), publication-ready sizing |
 | **Write reports** | Real citations from search results, never fabricated |
 | **Review research** | 8-dimension ScholarEval rubric for systematic quality assessment |
+
+</div>
 
 ---
 
@@ -124,6 +129,8 @@ scienceclaw ask "Search TREM2 in Alzheimer's disease and summarize recent findin
 
 ScienceClaw inherits all channel integrations from OpenClaw. Connect your preferred interface:
 
+<div align="center">
+
 | Channel | How to use |
 |---------|-----------|
 | **Terminal UI** | `scienceclaw tui` |
@@ -136,6 +143,8 @@ ScienceClaw inherits all channel integrations from OpenClaw. Connect your prefer
 | **WhatsApp** | [Setup guide](docs/channels/whatsapp.md) |
 | **Matrix** | [Setup guide](docs/channels/matrix.md) |
 | + more | `scienceclaw openclaw channels --help` |
+
+</div>
 
 ---
 
@@ -153,12 +162,16 @@ ScienceClaw = OpenClaw + SCIENCE.md + 264 Skills
 
 No TypeScript. No Python servers. No MCP. No plugins. The model does the work.
 
+<div align="center">
+
 | Layer | Components |
 |-------|-----------|
 | **User** | Terminal UI, Web Dashboard, Telegram, Discord, Slack, Feishu, WeChat, WhatsApp, Matrix |
 | **Gateway** | OpenClaw gateway — routes messages, manages sessions, handles tool calls |
 | **Agent** | Single `ScienceClaw` agent powered by `SCIENCE.md` (~200 lines) + 264 domain skills |
 | **Infrastructure** | `web_search`, `web_fetch`, `bash` — the three built-in OpenClaw tools that do everything |
+
+</div>
 
 ---
 
@@ -172,6 +185,8 @@ No TypeScript. No Python servers. No MCP. No plugins. The model does the work.
 
 ScienceClaw searches across 15+ sources, cross-references results, and verifies citations before including them in reports.
 
+<div align="center">
+
 | Category | Sources |
 |----------|---------|
 | **Biomedical literature** | PubMed, PubMed Central, Europe PMC |
@@ -180,6 +195,8 @@ ScienceClaw searches across 15+ sources, cross-references results, and verifies 
 | **Clinical** | ClinicalTrials.gov, WHO ICTRP |
 | **Patents & grants** | Google Patents, NIH RePORTER |
 | **General** | Google Scholar, Web search |
+
+</div>
 
 ---
 
@@ -193,6 +210,8 @@ ScienceClaw searches across 15+ sources, cross-references results, and verifies 
 
 77+ databases across 9 disciplines, all accessed through their public APIs via `web_fetch`.
 
+<div align="center">
+
 | Discipline | Databases | Count |
 |------------|-----------|-------|
 | **Genomics & Transcriptomics** | NCBI Gene, Ensembl, UCSC Genome Browser, GEO, TCGA, GTEx, ENCODE | 10+ |
@@ -205,17 +224,21 @@ ScienceClaw searches across 15+ sources, cross-references results, and verifies 
 | **Clinical & Epidemiology** | ClinicalTrials.gov, GBD, WHO GHO, SEER, cBioPortal | 7+ |
 | **Model Organisms** | MGI, FlyBase, WormBase, ZFIN, RGD, SGD | 7+ |
 
+</div>
+
 ---
 
 ## 📚 Skills
 
 <div align="center">
-<img src="assets/skills-domains.png" width="700" alt="Skills Domains" />
+<img src="assets/skills-domains.png" width="550" alt="Skills Domains" />
 </div>
 
 <br />
 
 264 domain skills provide detailed guidance for specific techniques. Each skill is a markdown file that teaches the model *how* to perform a particular analysis.
+
+<div align="center">
 
 | Domain | Example Skills |
 |--------|---------------|
@@ -228,6 +251,8 @@ ScienceClaw searches across 15+ sources, cross-references results, and verifies 
 | **Genomics** | Variant annotation, GWAS analysis, copy number variation, mutation signatures |
 | **Immunology** | Immune infiltration, neoantigen prediction, TCR/BCR repertoire analysis |
 | **Machine learning** | Feature selection, model training, cross-validation, SHAP interpretation |
+
+</div>
 
 ---
 
@@ -247,10 +272,14 @@ docker-compose up
 
 One-click deployment to your preferred platform:
 
+<div align="center">
+
 | Platform | Deploy |
 |----------|--------|
 | **Railway** | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template) |
 | **Fly.io** | `fly launch` — see [docs/deploy/fly.md](docs/deploy/fly.md) |
+
+</div>
 
 ---
 
@@ -280,8 +309,10 @@ This project is licensed under the [MIT License](LICENSE).
 
 <br />
 
-*"Welcome to the real world. It sucks. You're gonna love it."*
+<img src="assets/ScienceClaw-Logo.png" width="120" alt="ScienceClaw Logo" />
 
 <br />
+
+**ScienceClaw** — Your AI Research Colleague.
 
 </div>
