@@ -293,7 +293,7 @@ docker-compose up
 
 **LIU Zaoqu**
 
-Institute of AI-Powered Medicine (IAPM), Guangdong Provincial People's Hospital · [pi-HuB](https://github.com/pi-HuB)
+International Academy of Phronesis Medicine (Guangdong) · [π-HuB infrastructure](https://github.com/pi-HuB)
 
 联系方式：[liuzaoqu@163.com](mailto:liuzaoqu@163.com)
 
