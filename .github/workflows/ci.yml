@@ -19,8 +19,11 @@ jobs:
       - name: Check SCIENCE.md exists
         run: test -f SCIENCE.md || { echo "SCIENCE.md not found"; exit 1; }
 
-      - name: Validate package.json
-        run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
+      - name: Validate JSON configs
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('openclaw.config.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('skills/CATALOG.json','utf8'))"
 
       - name: Check all skill folders have SKILL.md
         run: |
@@ -47,9 +50,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Run smoke tests
         run: bash tests/smoke_test.sh

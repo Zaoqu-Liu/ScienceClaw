@@ -26,6 +26,8 @@ check "SCIENCE.md is non-empty" test -s SCIENCE.md
 check "openclaw.config.json exists" test -f openclaw.config.json
 check "openclaw.config.json is valid JSON" node -e "JSON.parse(require('fs').readFileSync('openclaw.config.json','utf8'))"
 check ".env.example exists" test -f .env.example
+check "CHANGELOG.md exists" test -f CHANGELOG.md
+check "CATALOG.json is valid JSON" node -e "JSON.parse(require('fs').readFileSync('skills/CATALOG.json','utf8'))"
 
 SKILL_COUNT=$(find skills -name "SKILL.md" -type f 2>/dev/null | wc -l | tr -d ' ')
 if [ "$SKILL_COUNT" -ge 200 ]; then
@@ -45,7 +47,13 @@ else
   FAIL=$((FAIL + 1))
 fi
 
-check "node_modules/openclaw exists" test -d node_modules/openclaw
+# openclaw engine check — skip in CI (local file: dependency)
+if [ -d node_modules/openclaw ]; then
+  echo "  PASS: node_modules/openclaw exists"
+  PASS=$((PASS + 1))
+else
+  echo "  SKIP: node_modules/openclaw not installed (expected in CI)"
+fi
 
 echo ""
 echo "=== Results: ${PASS} passed, ${FAIL} failed ==="
