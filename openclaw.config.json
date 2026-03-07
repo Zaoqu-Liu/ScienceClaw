@@ -127,7 +127,7 @@
   },
   "channels": {
     "telegram": {
-      "enabled": false,
+      "enabled": true,
       "dmPolicy": "open",
       "allowFrom": ["*"],
       "botToken": "${TELEGRAM_BOT_TOKEN}",
@@ -160,7 +160,7 @@
   "plugins": {
     "entries": {
       "telegram": {
-        "enabled": false
+        "enabled": true
       }
     }
   }
