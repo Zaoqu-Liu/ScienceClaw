@@ -1,5 +1,9 @@
 {
   "$schema": "https://docs.openclaw.ai/config-schema.json",
+  "meta": {
+    "lastTouchedVersion": "2026.3.3",
+    "lastTouchedAt": "2026-03-07T02:38:53.180Z"
+  },
   "models": {
     "providers": {
       "openai": {
@@ -89,6 +93,20 @@
     "restart": true,
     "ownerDisplay": "raw"
   },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "open",
+      "allowFrom": ["*"],
+      "botToken": "YOUR_TELEGRAM_BOT_TOKEN",
+      "groupPolicy": "open",
+      "groupAllowFrom": ["*"],
+      "streaming": "partial",
+      "commands": {
+        "native": false
+      }
+    }
+  },
   "gateway": {
     "mode": "local",
     "auth": {
@@ -99,16 +117,19 @@
   "skills": {
     "load": {
       "extraDirs": [
-        "/Users/liuzaoqu/Desktop/develop/sogen/scienceclaw/skills"
+        "./skills"
       ]
     },
     "limits": {
-      "maxSkillsLoadedPerSource": 300,
-      "maxCandidatesPerRoot": 300
+      "maxCandidatesPerRoot": 300,
+      "maxSkillsLoadedPerSource": 300
     }
   },
-  "meta": {
-    "lastTouchedVersion": "2026.3.3",
-    "lastTouchedAt": "2026-03-06T10:03:52.265Z"
+  "plugins": {
+    "entries": {
+      "telegram": {
+        "enabled": true
+      }
+    }
   }
 }

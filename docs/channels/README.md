@@ -7,7 +7,7 @@ ScienceClaw connects to messaging platforms through the **OpenClaw** gateway, le
 The fastest way to add a channel is the interactive configuration wizard:
 
 ```bash
-scienceclaw openclaw configure
+scienceclaw configure
 ```
 
 This walks you through selecting a platform, entering credentials, and verifying the connection. For manual setup, see the individual guides below.
@@ -28,17 +28,20 @@ This walks you through selecting a platform, entering credentials, and verifying
 ## Common Commands
 
 ```bash
+# Enable a channel plugin (required before first use)
+scienceclaw plugins enable <channel-name>
+
 # Add a channel
-scienceclaw openclaw channels add --channel <name> [options]
+scienceclaw channels add --channel <name> [options]
 
 # Log in to a channel that requires interactive auth (e.g. WhatsApp QR)
-scienceclaw openclaw channels login --channel <name>
+scienceclaw channels login --channel <name>
 
 # Check status of all configured channels
-scienceclaw openclaw channels status
+scienceclaw channels status
 
 # Interactive setup wizard
-scienceclaw openclaw configure
+scienceclaw configure
 ```
 
 ## Prerequisites
@@ -51,4 +54,4 @@ All channel guides assume:
 
 ## Next Steps
 
-Pick a channel from the table above and follow its guide. If you run into issues, each guide includes a troubleshooting section. You can also run `scienceclaw openclaw channels status` at any time to verify your connections.
+Pick a channel from the table above and follow its guide. If you run into issues, each guide includes a troubleshooting section. You can also run `scienceclaw channels status` at any time to verify your connections.

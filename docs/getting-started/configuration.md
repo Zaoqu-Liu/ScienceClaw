@@ -63,8 +63,10 @@ This is the primary configuration file. It controls model providers, agent behav
   "models": { ... },
   "agents": { ... },
   "commands": { ... },
+  "channels": { ... },
   "gateway": { ... },
   "skills": { ... },
+  "plugins": { ... },
   "meta": { ... }
 }
 ```
@@ -269,6 +271,59 @@ To add your own skills, create a new directory with a `SKILL.md` file and add it
 | `nativeSkills` | Enable native skill commands |
 | `restart` | Allow agent restart command |
 | `ownerDisplay` | How to display command ownership |
+
+### `channels` -- Channel Configuration
+
+Chat channels (Telegram, Discord, Slack, etc.) are configured here. Each channel must also have its plugin enabled via the `plugins` section.
+
+```json
+{
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "open",
+      "allowFrom": ["*"],
+      "botToken": "<YOUR_BOT_TOKEN>",
+      "groupPolicy": "open",
+      "groupAllowFrom": ["*"],
+      "streaming": "partial",
+      "commands": {
+        "native": false
+      }
+    }
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `enabled` | Whether the channel is active |
+| `dmPolicy` | DM access policy: `"open"` (anyone) or `"pairing"` (paired users only) |
+| `allowFrom` | Array of allowed sender IDs; `["*"]` allows all (required when `dmPolicy` is `"open"`) |
+| `botToken` | Bot authentication token from the platform |
+| `groupPolicy` | Group access policy: `"open"` or `"allowlist"` |
+| `groupAllowFrom` | Array of allowed group IDs; `["*"]` allows all |
+| `streaming` | Response streaming mode: `"partial"` (live updates) or `"full"` (send on complete) |
+| `commands.native` | Set to `false` to disable slash command registration (recommended — ScienceClaw has 264+ skills which exceeds Telegram's command limit) |
+
+See the [Channel Integrations](../channels/README.md) guide for setup instructions for each platform.
+
+### `plugins` -- Plugin Configuration
+
+Channel plugins must be explicitly enabled before use:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "telegram": { "enabled": true },
+      "discord": { "enabled": true }
+    }
+  }
+}
+```
+
+Enable plugins via CLI: `scienceclaw plugins enable <name>`. List available plugins: `scienceclaw plugins list`.
 
 ### `meta` -- Metadata
 

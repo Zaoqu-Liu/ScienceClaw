@@ -37,21 +37,29 @@ Connect ScienceClaw to Feishu (飞书) or Lark so users can interact with your a
 1. Go to **Credentials & Basic Info**.
 2. Copy the **App ID** and **App Secret**.
 
-## Step 5: Add the Channel
+## Step 5: Enable the Feishu Plugin
+
+The Feishu plugin is disabled by default. Enable it first:
 
 ```bash
-scienceclaw openclaw channels add --channel feishu --app-id <APP_ID> --app-secret <APP_SECRET>
+scienceclaw plugins enable feishu
+```
+
+## Step 6: Add the Channel
+
+```bash
+scienceclaw channels add --channel feishu --app-id <APP_ID> --app-secret <APP_SECRET>
 ```
 
 Replace `<APP_ID>` and `<APP_SECRET>` with the values from Step 4.
 
-## Step 6: Publish and Deploy
+## Step 7: Publish and Deploy
 
 1. Go to **App Release** → **Version Management**.
 2. Create a new version and submit for review. For enterprise-internal apps, approval is usually instant.
 3. Once published, add the bot to a Feishu group or send it a direct message.
 
-## Step 7: Restart the Gateway and Test
+## Step 8: Restart the Gateway and Test
 
 ```bash
 scienceclaw stop && scienceclaw run

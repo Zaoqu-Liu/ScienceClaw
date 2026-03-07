@@ -134,7 +134,7 @@ ScienceClaw inherits all channel integrations from OpenClaw. Connect your prefer
 | Channel | How to use |
 |---------|-----------|
 | **Terminal UI** | `scienceclaw tui` |
-| **Web Dashboard** | `scienceclaw openclaw dashboard` |
+| **Web Dashboard** | `scienceclaw dashboard` |
 | **Telegram** | [Setup guide](docs/channels/telegram.md) |
 | **Discord** | [Setup guide](docs/channels/discord.md) |
 | **Slack** | [Setup guide](docs/channels/slack.md) |
@@ -142,7 +142,7 @@ ScienceClaw inherits all channel integrations from OpenClaw. Connect your prefer
 | **WeChat** | [Setup guide](docs/channels/wechat.md) |
 | **WhatsApp** | [Setup guide](docs/channels/whatsapp.md) |
 | **Matrix** | [Setup guide](docs/channels/matrix.md) |
-| + more | `scienceclaw openclaw channels --help` |
+| + more | `scienceclaw channels --help` |
 
 </div>
 
@@ -277,7 +277,7 @@ One-click deployment to your preferred platform:
 | Platform | Deploy |
 |----------|--------|
 | **Railway** | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template) |
-| **Fly.io** | `fly launch` — see [docs/deploy/fly.md](docs/deploy/fly.md) |
+| **Fly.io** | `fly launch` — see [Deployment Guide](docs/guides/deployment.md#flyio) |
 
 </div>
 

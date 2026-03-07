@@ -18,7 +18,7 @@ scienceclaw run
 ## Step 2: Launch the Dashboard
 
 ```bash
-scienceclaw openclaw dashboard
+scienceclaw dashboard
 ```
 
 This starts the web dashboard server. Your default browser opens automatically. If it does not, copy the URL printed in the terminal (typically `http://127.0.0.1:<port>`).
