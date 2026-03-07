@@ -25,7 +25,7 @@ Inspired by the visual exploration approach showcased in work by zarazhangrui (c
 4. **Distinctive design**: avoid generic purple-gradient, Inter-on-white, template-looking decks.
 5. **Production quality**: keep code commented, accessible, responsive, and performant.
 
-Before generating, read `STYLE_PRESETS.md` for the viewport-safe CSS base, density limits, preset catalog, and CSS gotchas.
+Apply viewport-safe CSS defaults: `height: 100vh; 100dvh; overflow: hidden` on every slide, `clamp()` for responsive typography, and CSS custom properties for theme values.
 
 ## Workflow
 
@@ -57,7 +57,7 @@ Otherwise:
 3. Each preview must be self-contained, show typography/color/motion clearly, and stay under roughly 100 lines of slide content.
 4. Ask the user which preview to keep or what elements to mix.
 
-Use the preset guide in `STYLE_PRESETS.md` when mapping mood to style.
+Map mood to style using the preset categories below (minimal/editorial, bold/dark, soft/light, technical/monospace).
 
 ### 4. Build the Presentation
 
@@ -69,7 +69,7 @@ Use an `assets/` folder only when the deck contains extracted or user-supplied i
 
 Required structure:
 - semantic slide sections
-- a viewport-safe CSS base from `STYLE_PRESETS.md`
+- a viewport-safe CSS base (100vh/100dvh, overflow hidden, clamp typography)
 - CSS custom properties for theme values
 - a presentation controller class for keyboard, wheel, and touch navigation
 - Intersection Observer for reveal animations
@@ -86,7 +86,7 @@ Rules:
 - never solve overflow by shrinking text below readable sizes
 - never allow scrollbars inside a slide
 
-Use the density limits and mandatory CSS block in `STYLE_PRESETS.md`.
+Apply the density limits from the Content Density Limits table below.
 
 ### 6. Validate
 
