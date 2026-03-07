@@ -275,8 +275,8 @@ scienceclaw/
 ├── SCIENCE.md               # Agent brain (identity + instructions, ~224 lines)
 ├── openclaw.config.json     # Configuration (models, agents, skills, gateway)
 ├── package.json             # Node.js package (depends on openclaw engine)
-├── .env                     # API keys (not committed)
-├── .env.example             # API key template
+├── .env                     # API keys and tokens (not committed)
+├── .env.example             # Environment variable template
 ├── scripts/
 │   └── setup.sh             # One-time setup script
 ├── skills/                  # 264 domain skills

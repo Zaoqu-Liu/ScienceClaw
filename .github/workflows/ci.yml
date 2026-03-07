@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check SCIENCE.md exists
+        run: test -f SCIENCE.md || { echo "SCIENCE.md not found"; exit 1; }
+
+      - name: Validate package.json
+        run: node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
+
+      - name: Check all skill folders have SKILL.md
+        run: |
+          missing=0
+          for dir in skills/*/; do
+            if [ ! -f "${dir}SKILL.md" ]; then
+              echo "Missing SKILL.md in ${dir}"
+              missing=1
+            fi
+          done
+          if [ "$missing" -eq 1 ]; then
+            echo "Some skill folders are missing SKILL.md"
+            exit 1
+          fi
+          echo "All skill folders have SKILL.md"
+
+  smoke-test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run smoke tests
+        run: bash tests/smoke_test.sh
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for hardcoded API keys
+        run: |
+          echo "Scanning for hardcoded API keys..."
+          PATTERNS='(sk-[a-zA-Z0-9]{20,}|xoxb-[a-zA-Z0-9-]+|xapp-[a-zA-Z0-9-]+)'
+          FOUND=$(grep -rEn "$PATTERNS" --include='*.js' --include='*.ts' --include='*.json' --include='*.yml' --include='*.yaml' --include='*.md' --include='*.sh' --include='*.py' . \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git \
+            --exclude='.env.example' \
+            || true)
+          if [ -n "$FOUND" ]; then
+            echo "Hardcoded API keys detected:"
+            echo "$FOUND"
+            exit 1
+          fi
+          echo "No hardcoded API keys found."

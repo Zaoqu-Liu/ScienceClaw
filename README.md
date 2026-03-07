@@ -67,8 +67,9 @@ ScienceClaw conducted a systematic literature search across PubMed, Semantic Sch
 | Requirement | Version | Notes |
 |-------------|---------|-------|
 | Node.js | >= 22 | Required |
+| pnpm | Latest | Required — `npm install -g pnpm` |
 | Python | >= 3.10 | For code execution (R, Julia optional) |
-| Docker | Latest | Optional — for containerized deployment |
+| Docker | Latest | Optional — for sandboxed code execution |
 
 </div>
 
@@ -89,7 +90,7 @@ bash scripts/setup.sh
 ### Step 3 — Run
 
 ```bash
-scienceclaw run              # auto-starts gateway + opens TUI
+./scienceclaw run            # auto-starts gateway + opens TUI
 ```
 
 That's it. One command.
@@ -97,7 +98,7 @@ That's it. One command.
 For one-shot mode, skip the TUI entirely:
 
 ```bash
-scienceclaw ask "Search TREM2 in Alzheimer's disease and summarize recent findings"
+./scienceclaw ask "Search TREM2 in Alzheimer's disease and summarize recent findings"
 ```
 
 ---
@@ -262,24 +263,15 @@ ScienceClaw searches across 15+ sources, cross-references results, and verifies 
 
 Already covered in [Quick Start](#quick-start).
 
-### Docker
+### Docker (sandbox only)
+
+The Docker setup provides a sandboxed Python/R/Julia execution environment:
 
 ```bash
-docker-compose up
+docker-compose -f docker/docker-compose.yml up
 ```
 
-### Cloud
-
-One-click deployment to your preferred platform:
-
-<div align="center">
-
-| Platform | Deploy |
-|----------|--------|
-| **Railway** | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template) |
-| **Fly.io** | `fly launch` — see [Deployment Guide](docs/guides/deployment.md#flyio) |
-
-</div>
+See [Deployment Guide](docs/guides/deployment.md) for full production deployment options.
 
 ---
 

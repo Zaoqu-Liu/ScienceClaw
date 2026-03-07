@@ -36,8 +36,27 @@ fi
 oc() { exec node "$OPENCLAW" "$@"; }
 oc_bg() { node "$OPENCLAW" "$@"; }
 
+_find_gateway_pid() {
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -i :"$GW_PORT" -sTCP:LISTEN -t 2>/dev/null | head -1
+  elif command -v ss >/dev/null 2>&1; then
+    ss -tlnp 2>/dev/null | grep ":${GW_PORT} " | grep -oP 'pid=\K[0-9]+' | head -1
+  elif command -v netstat >/dev/null 2>&1; then
+    netstat -tlnp 2>/dev/null | grep ":${GW_PORT} " | awk '{print $NF}' | cut -d/ -f1 | head -1
+  fi
+}
+
 is_gateway_running() {
-  lsof -i :"$GW_PORT" -sTCP:LISTEN >/dev/null 2>&1
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -i :"$GW_PORT" -sTCP:LISTEN >/dev/null 2>&1
+  elif command -v ss >/dev/null 2>&1; then
+    ss -tlnp 2>/dev/null | grep -q ":${GW_PORT} "
+  elif command -v netstat >/dev/null 2>&1; then
+    netstat -tlnp 2>/dev/null | grep -q ":${GW_PORT} "
+  else
+    # Last resort: try connecting to the port
+    (echo >/dev/tcp/127.0.0.1/"$GW_PORT") 2>/dev/null
+  fi
 }
 
 wait_for_gateway() {
@@ -85,7 +104,7 @@ stop_gateway() {
     rm -f "$GW_PID_FILE"
   elif is_gateway_running; then
     local pid
-    pid=$(lsof -i :"$GW_PORT" -sTCP:LISTEN -t 2>/dev/null | head -1)
+    pid=$(_find_gateway_pid)
     if [ -n "$pid" ]; then
       kill "$pid" 2>/dev/null; sleep 1
       kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
@@ -120,7 +139,7 @@ case "${1:-}" in
     ;;
   status)
     if is_gateway_running; then
-      local_pid=$(lsof -i :"$GW_PORT" -sTCP:LISTEN -t 2>/dev/null | head -1)
+      local_pid=$(_find_gateway_pid)
       echo "  ✅ Gateway running (PID ${local_pid:-?}, port $GW_PORT)"
       echo "  📋 Log: $GW_LOG"
     else
