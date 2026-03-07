@@ -44,7 +44,61 @@ Create publication-quality academic presentations (.pptx) for group meetings, th
 - **Consistent styling**: same fonts, colors, and layout throughout
 
 ## Technical Implementation
-- Use python-pptx for programmatic generation
-- Template-based: define slide layouts, then populate with content
-- Support custom color themes and institutional branding
-- Export as .pptx (editable) and .pdf (final)
+
+### Dependencies
+
+Install before use (include in the same bash call as the script):
+```bash
+pip install -q python-pptx Pillow
+```
+
+### Execution Pattern
+
+Write the ENTIRE presentation as a single self-contained Python script, then run it in ONE bash call:
+
+```bash
+bash: pip install -q python-pptx Pillow && python3 << 'PPTXEOF'
+from pptx import Presentation
+from pptx.util import Inches, Pt, Emu
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+import os
+
+OUTPUT_DIR = os.path.expanduser("~/.scienceclaw/workspace")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+OUTPUT_PATH = os.path.join(OUTPUT_DIR, "presentation.pptx")
+
+prs = Presentation()
+prs.slide_width = Inches(13.333)
+prs.slide_height = Inches(7.5)
+
+# ... build all slides here ...
+
+prs.save(OUTPUT_PATH)
+print(f"DONE: {OUTPUT_PATH} ({len(prs.slides)} slides)")
+PPTXEOF
+```
+
+### Output Convention
+
+- Save to `~/.scienceclaw/workspace/<descriptive-name>.pptx`
+- Print the absolute path and slide count on success
+- If the script fails, print the traceback — do NOT silently swallow errors
+
+### Error Handling
+
+- If `python-pptx` fails to install, tell the user: "python-pptx is not available. Please run `pip install python-pptx` on the host."
+- If the script errors, read the traceback, fix the issue, and re-run (max 3 attempts).
+- After success, verify the file exists and has non-zero size before telling the user it is ready.
+
+### Color Themes
+
+Use academic color palettes from SCIENCE.md (NPG, Lancet, JCO, NEJM) for consistent styling:
+```python
+THEME = {
+    "primary": RGBColor(0x00, 0x46, 0x8B),    # Lancet blue
+    "accent":  RGBColor(0xED, 0x00, 0x00),     # Lancet red
+    "text":    RGBColor(0x33, 0x33, 0x33),
+    "bg":      RGBColor(0xFF, 0xFF, 0xFF),
+}
+```

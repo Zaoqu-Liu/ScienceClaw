@@ -57,8 +57,8 @@
     "defaults": {
       "model": "claude/claude-sonnet-4-6",
       "workspace": "~/.scienceclaw/workspace",
-      "bootstrapMaxChars": 30000,
-      "bootstrapTotalMaxChars": 200000,
+      "bootstrapMaxChars": 50000,
+      "bootstrapTotalMaxChars": 300000,
       "contextPruning": {
         "mode": "cache-ttl",
         "ttl": "1h"
@@ -86,6 +86,41 @@
         }
       }
     ]
+  },
+  "tools": {
+    "media": {
+      "audio": {
+        "enabled": true,
+        "echoTranscript": true,
+        "models": [
+          {
+            "provider": "openai",
+            "model": "whisper-1",
+            "baseUrl": "https://yunwu.ai/v1"
+          }
+        ]
+      },
+      "image": {
+        "enabled": true,
+        "models": [
+          {
+            "provider": "openai",
+            "model": "gpt-4o",
+            "baseUrl": "https://yunwu.ai/v1"
+          }
+        ]
+      }
+    }
+  },
+  "messages": {
+    "tts": {
+      "auto": "inbound",
+      "provider": "openai",
+      "openai": {
+        "baseUrl": "https://yunwu.ai/v1",
+        "voice": "alloy"
+      }
+    }
   },
   "commands": {
     "native": "auto",
