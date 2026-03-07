@@ -16,9 +16,32 @@ _resolve() {
 
 ROOT="$(_resolve)"
 export SCIENCECLAW_ROOT="$ROOT"
-export OPENCLAW_CONFIG_PATH="$ROOT/openclaw.config.json"
 
 [ -f "$ROOT/.env" ] && set -a && source "$ROOT/.env" && set +a
+
+RUNTIME_CONFIG="/tmp/scienceclaw-config.json"
+
+_build_runtime_config() {
+  local tpl="$ROOT/openclaw.config.json"
+  if [ ! -f "$tpl" ]; then
+    echo "  ❌ openclaw.config.json not found" >&2; return 1
+  fi
+  local content
+  content=$(<"$tpl")
+  # Substitute ${VAR} and ${VAR:-default} patterns with env values
+  while [[ "$content" =~ \$\{([A-Za-z_][A-Za-z_0-9]*)(\:\-([^\}]*))?\} ]]; do
+    local var_name="${BASH_REMATCH[1]}"
+    local default_val="${BASH_REMATCH[3]}"
+    local actual_val="${!var_name:-$default_val}"
+    content="${content//${BASH_REMATCH[0]}/$actual_val}"
+  done
+  # Resolve relative ./skills to absolute path
+  content="${content//\.\/skills/$ROOT/skills}"
+  printf '%s' "$content" > "$RUNTIME_CONFIG"
+}
+
+_build_runtime_config || exit 1
+export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
 
 OPENCLAW="$ROOT/node_modules/openclaw/openclaw.mjs"
 GW_PORT=18789
