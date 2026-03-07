@@ -30,7 +30,7 @@ WeCom provides an official bot API and is the more stable, production-ready opti
 ### Step 3: Add the Channel
 
 ```bash
-scienceclaw openclaw channels add --channel wecom --corp-id <CORP_ID> --agent-secret <AGENT_SECRET> --token <TOKEN> --aes-key <AES_KEY>
+scienceclaw channels add --channel wecom --corp-id <CORP_ID> --agent-secret <AGENT_SECRET> --token <TOKEN> --aes-key <AES_KEY>
 ```
 
 ### Step 4: Restart the Gateway and Test

@@ -64,15 +64,23 @@ settings:
 2. Click **Install to Workspace** and authorize.
 3. Copy the **Bot User OAuth Token** — it starts with `xoxb-`.
 
-## Step 4: Add the Channel
+## Step 4: Enable the Slack Plugin
+
+The Slack plugin is disabled by default. Enable it first:
 
 ```bash
-scienceclaw openclaw channels add --channel slack --app-token <XAPP_TOKEN> --bot-token <XOXB_TOKEN>
+scienceclaw plugins enable slack
+```
+
+## Step 5: Add the Channel
+
+```bash
+scienceclaw channels add --channel slack --app-token <XAPP_TOKEN> --bot-token <XOXB_TOKEN>
 ```
 
 Replace `<XAPP_TOKEN>` with the `xapp-...` token and `<XOXB_TOKEN>` with the `xoxb-...` token.
 
-## Step 5: Restart the Gateway and Test
+## Step 6: Restart the Gateway and Test
 
 ```bash
 scienceclaw stop && scienceclaw run

@@ -134,7 +134,7 @@ ScienceClaw 继承 OpenClaw 的所有渠道集成。连接你习惯的界面：
 | 渠道 | 使用方式 |
 |------|----------|
 | **终端 UI** | `scienceclaw tui` |
-| **Web 面板** | `scienceclaw openclaw dashboard` |
+| **Web 面板** | `scienceclaw dashboard` |
 | **Telegram** | [配置指南](../channels/telegram.md) |
 | **Discord** | [配置指南](../channels/discord.md) |
 | **Slack** | [配置指南](../channels/slack.md) |
@@ -142,7 +142,7 @@ ScienceClaw 继承 OpenClaw 的所有渠道集成。连接你习惯的界面：
 | **微信** | [配置指南](../channels/wechat.md) |
 | **WhatsApp** | [配置指南](../channels/whatsapp.md) |
 | **Matrix** | [配置指南](../channels/matrix.md) |
-| + 更多 | `scienceclaw openclaw channels --help` |
+| + 更多 | `scienceclaw channels --help` |
 
 </div>
 
@@ -277,7 +277,7 @@ docker-compose up
 | 平台 | 部署 |
 |------|------|
 | **Railway** | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template) |
-| **Fly.io** | `fly launch` — 详见 [docs/deploy/fly.md](../deploy/fly.md) |
+| **Fly.io** | `fly launch` — 详见[部署指南](../guides/deployment.md#flyio) |
 
 </div>
 

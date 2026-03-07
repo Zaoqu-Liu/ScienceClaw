@@ -134,7 +134,7 @@ ScienceClaw는 OpenClaw의 모든 채널 통합을 상속합니다. 선호하는
 | 채널 | 사용 방법 |
 |------|----------|
 | **터미널 UI** | `scienceclaw tui` |
-| **웹 대시보드** | `scienceclaw openclaw dashboard` |
+| **웹 대시보드** | `scienceclaw dashboard` |
 | **Telegram** | [설정 가이드](../channels/telegram.md) |
 | **Discord** | [설정 가이드](../channels/discord.md) |
 | **Slack** | [설정 가이드](../channels/slack.md) |
@@ -142,7 +142,7 @@ ScienceClaw는 OpenClaw의 모든 채널 통합을 상속합니다. 선호하는
 | **WeChat** | [설정 가이드](../channels/wechat.md) |
 | **WhatsApp** | [설정 가이드](../channels/whatsapp.md) |
 | **Matrix** | [설정 가이드](../channels/matrix.md) |
-| + 기타 | `scienceclaw openclaw channels --help` |
+| + 기타 | `scienceclaw channels --help` |
 
 </div>
 
@@ -277,7 +277,7 @@ docker-compose up
 | 플랫폼 | 배포 |
 |-------|------|
 | **Railway** | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template) |
-| **Fly.io** | `fly launch` — [docs/deploy/fly.md](../deploy/fly.md) 참조 |
+| **Fly.io** | `fly launch` — [배포 가이드](../guides/deployment.md#flyio) 참조 |
 
 </div>
 

@@ -10,21 +10,29 @@ Connect ScienceClaw to WhatsApp so users can interact with your agent through Wh
 - Gateway running (`scienceclaw run`) on `ws://127.0.0.1:18789`
 - A phone with WhatsApp installed and an active account
 
-## Step 1: Ensure the Gateway Is Running
+## Step 1: Enable the WhatsApp Plugin
+
+The WhatsApp plugin is disabled by default. Enable it first:
+
+```bash
+scienceclaw plugins enable whatsapp
+```
+
+## Step 2: Ensure the Gateway Is Running
 
 ```bash
 scienceclaw run
 ```
 
-## Step 2: Log In to WhatsApp
+## Step 3: Log In to WhatsApp
 
 ```bash
-scienceclaw openclaw channels login --channel whatsapp
+scienceclaw channels login --channel whatsapp
 ```
 
 A QR code is displayed in your terminal.
 
-## Step 3: Scan the QR Code
+## Step 4: Scan the QR Code
 
 1. Open WhatsApp on your phone.
 2. Go to **Settings** → **Linked Devices** → **Link a Device**.
@@ -32,7 +40,7 @@ A QR code is displayed in your terminal.
 
 Once linked, the terminal confirms the connection and the gateway begins receiving messages.
 
-## Step 4: Test
+## Step 5: Test
 
 Send a message to the WhatsApp number from another phone or ask someone to message you. ScienceClaw should reply automatically.
 
@@ -49,15 +57,15 @@ Sessions can expire if:
 If the session expires, run the login command again:
 
 ```bash
-scienceclaw openclaw channels login --channel whatsapp
+scienceclaw channels login --channel whatsapp
 ```
 
 ## Re-authentication
 
-If the bot stops responding and `scienceclaw openclaw channels status` shows WhatsApp as disconnected:
+If the bot stops responding and `scienceclaw channels status` shows WhatsApp as disconnected:
 
 1. Stop the gateway: `scienceclaw stop`
-2. Re-login: `scienceclaw openclaw channels login --channel whatsapp`
+2. Re-login: `scienceclaw channels login --channel whatsapp`
 3. Scan the QR code again.
 4. Restart: `scienceclaw run`
 
@@ -72,5 +80,5 @@ If the bot stops responding and `scienceclaw openclaw channels status` shows Wha
 - Ensure your phone has a stable internet connection — the linked device requires the phone to be online periodically.
 
 **Messages are delivered but no reply is sent**
-- Run `scienceclaw openclaw channels status` to confirm the WhatsApp channel is active.
+- Run `scienceclaw channels status` to confirm the WhatsApp channel is active.
 - Check gateway logs for errors related to message processing.

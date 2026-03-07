@@ -10,3 +10,5 @@ __pycache__/
 .pytest_cache/
 .venv/
 /tmp/
+openclaw.config.local.json
+openclaw.config.json.bak

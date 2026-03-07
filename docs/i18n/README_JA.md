@@ -134,7 +134,7 @@ ScienceClaw はOpenClawのすべてのチャネル統合を継承しています
 | チャネル | 使い方 |
 |---------|--------|
 | **ターミナルUI** | `scienceclaw tui` |
-| **Webダッシュボード** | `scienceclaw openclaw dashboard` |
+| **Webダッシュボード** | `scienceclaw dashboard` |
 | **Telegram** | [セットアップガイド](../channels/telegram.md) |
 | **Discord** | [セットアップガイド](../channels/discord.md) |
 | **Slack** | [セットアップガイド](../channels/slack.md) |
@@ -142,7 +142,7 @@ ScienceClaw はOpenClawのすべてのチャネル統合を継承しています
 | **WeChat** | [セットアップガイド](../channels/wechat.md) |
 | **WhatsApp** | [セットアップガイド](../channels/whatsapp.md) |
 | **Matrix** | [セットアップガイド](../channels/matrix.md) |
-| + その他 | `scienceclaw openclaw channels --help` |
+| + その他 | `scienceclaw channels --help` |
 
 </div>
 
@@ -277,7 +277,7 @@ docker-compose up
 | プラットフォーム | デプロイ |
 |---------------|---------|
 | **Railway** | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template) |
-| **Fly.io** | `fly launch` — [docs/deploy/fly.md](../deploy/fly.md) 参照 |
+| **Fly.io** | `fly launch` — [デプロイガイド](../guides/deployment.md#flyio) 参照 |
 
 </div>
 

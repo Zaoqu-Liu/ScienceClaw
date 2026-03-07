@@ -43,10 +43,18 @@ curl -X POST "https://yourhomeserver.org/_matrix/client/v3/login" \
 
 The response contains an `access_token` field.
 
-## Step 3: Add the Channel
+## Step 3: Enable the Matrix Plugin
+
+The Matrix plugin is disabled by default. Enable it first:
 
 ```bash
-scienceclaw openclaw channels add --channel matrix \
+scienceclaw plugins enable matrix
+```
+
+## Step 4: Add the Channel
+
+```bash
+scienceclaw channels add --channel matrix \
   --homeserver https://yourhomeserver.org \
   --user-id @scienceclaw-bot:yourhomeserver.org \
   --access-token <TOKEN>
@@ -57,11 +65,11 @@ Replace:
 - `@scienceclaw-bot:yourhomeserver.org` with the bot's full Matrix user ID
 - `<TOKEN>` with the access token from Step 2
 
-## Step 4: Invite the Bot to Rooms
+## Step 5: Invite the Bot to Rooms
 
 In any Matrix client (Element, etc.), invite the bot user to the rooms where you want it to be active. The bot auto-accepts invites when the gateway is running.
 
-## Step 5: Restart the Gateway and Test
+## Step 6: Restart the Gateway and Test
 
 ```bash
 scienceclaw stop && scienceclaw run
@@ -92,7 +100,7 @@ For production use, self-hosting gives you control over rate limits, storage, an
 ## Troubleshooting
 
 **Bot does not respond in a room**
-- Verify the bot has been invited and has joined the room. Check with `scienceclaw openclaw channels status`.
+- Verify the bot has been invited and has joined the room. Check with `scienceclaw channels status`.
 - Some homeservers rate-limit new accounts. Wait a few minutes after account creation before testing.
 
 **"M_UNKNOWN_TOKEN" error**

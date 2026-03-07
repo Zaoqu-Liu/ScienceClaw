@@ -35,15 +35,25 @@ Connect ScienceClaw to Discord so users can interact with your agent in Discord 
 4. Copy the generated URL and open it in your browser.
 5. Select the server you want to add the bot to and authorize it.
 
-## Step 4: Add the Channel
+## Step 4: Enable the Discord Plugin
+
+The Discord plugin is disabled by default. Enable it first:
 
 ```bash
-scienceclaw openclaw channels add --channel discord --token <BOT_TOKEN>
+scienceclaw plugins enable discord
+```
+
+## Step 5: Add the Channel
+
+```bash
+scienceclaw channels add --channel discord --token <BOT_TOKEN>
 ```
 
 Replace `<BOT_TOKEN>` with the token from Step 2.
 
-## Step 5: Restart the Gateway and Test
+> **Note:** ScienceClaw has 264+ skills that may be registered as slash commands. If you see `BOT_COMMANDS_TOO_MUCH` errors in the logs, add `"commands": { "native": false }` to the `channels.discord` section in `openclaw.config.json`.
+
+## Step 6: Restart the Gateway and Test
 
 ```bash
 scienceclaw stop && scienceclaw run
