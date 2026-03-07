@@ -11,4 +11,4 @@ __pycache__/
 .venv/
 /tmp/
 openclaw.config.local.json
-openclaw.config.json.bak
+openclaw.config.json.bak*

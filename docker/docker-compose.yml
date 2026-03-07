@@ -1,13 +1,33 @@
 services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gateway
+    ports:
+      - "18789:18789"
+    env_file:
+      - ../.env
+    volumes:
+      - ../SCIENCE.md:/app/SCIENCE.md:ro
+      - ../openclaw.config.json:/app/openclaw.config.json:ro
+      - ../skills:/app/skills:ro
+      - scienceclaw-workspace:/app/workspace
+    depends_on:
+      - sandbox
+    restart: unless-stopped
+
   sandbox:
     build:
       context: .
       dockerfile: Dockerfile.sandbox
     volumes:
-      - ../workspace:/work
+      - scienceclaw-workspace:/work
     deploy:
       resources:
         limits:
           memory: 4g
           cpus: "2"
     network_mode: none
+
+volumes:
+  scienceclaw-workspace:

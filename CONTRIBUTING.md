@@ -13,17 +13,60 @@ Thank you for your interest in contributing to ScienceClaw! This guide will help
 Skills are the core building blocks of ScienceClaw. To add a new skill:
 
 1. Create a new folder under `skills/` with a descriptive name (e.g., `skills/my-new-skill/`).
-2. Add a `SKILL.md` file inside the folder with the following frontmatter format:
+2. Add a `SKILL.md` file inside the folder. Use the YAML frontmatter format:
 
 ```markdown
 ---
-name: My New Skill
-description: A brief description of what this skill does.
-category: analysis
-tags: [statistics, data]
+name: my-new-skill
+description: A brief description of what this skill does and when to use it.
+keywords:
+  - keyword1
+  - keyword2
+license: MIT
 ---
 
-Detailed instructions for the AI agent on how to use this skill.
+# My New Skill
+
+Brief overview of the skill's purpose. Use when [trigger conditions].
+
+## When to Use
+
+- When the user asks about [topic]
+- When the task involves [specific technique]
+
+## Key Resources
+
+- **API Endpoint**: https://example.com/api/v1/...
+- **Documentation**: https://docs.example.com
+
+## Workflow
+
+1. First, do X
+2. Then, query Y with parameters Z
+3. Verify results by checking W
+
+## Code Templates
+
+### Python Example
+
+\`\`\`python
+import requests
+
+response = requests.get("https://api.example.com/query", params={
+    "term": "QUERY",
+    "format": "json"
+})
+data = response.json()
+\`\`\`
+
+## Common Pitfalls
+
+- Pitfall 1: description and how to avoid
+
+## Quality Checks
+
+- Verify: condition 1
+- Verify: condition 2
 ```
 
 3. Include any supporting files (templates, scripts) in the same folder.
@@ -36,18 +79,15 @@ Found a bug? Please [open a bug report](../../issues/new?template=bug_report.yml
 ## Development setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/sogen-ai/scienceclaw.git
-cd scienceclaw
+git clone https://github.com/Zaoqu-Liu/ScienceClaw.git
+cd ScienceClaw
 
-# Install dependencies
-npm install
+# pnpm is required (npm install -g pnpm if you don't have it)
+bash scripts/setup.sh
 
-# Verify your setup
 bash tests/smoke_test.sh
 
-# Run ScienceClaw
-./scienceclaw
+./scienceclaw run
 ```
 
 ## Code of conduct

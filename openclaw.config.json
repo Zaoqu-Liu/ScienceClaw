@@ -2,13 +2,13 @@
   "$schema": "https://docs.openclaw.ai/config-schema.json",
   "meta": {
     "lastTouchedVersion": "2026.3.3",
-    "lastTouchedAt": "2026-03-07T02:38:53.180Z"
+    "lastTouchedAt": "2026-03-07T10:15:00.000Z"
   },
   "models": {
     "providers": {
       "openai": {
-        "baseUrl": "https://yunwu.ai/v1",
-        "apiKey": "sk-zc5Ra2ML0YtaIxLeYe5BrPHTjc36YJkMPDILmafEOUVN5GSV",
+        "baseUrl": "${OPENAI_BASE_URL:-https://api.openai.com/v1}",
+        "apiKey": "${OPENAI_API_KEY}",
         "api": "openai-completions",
         "models": [
           {
@@ -22,8 +22,8 @@
         ]
       },
       "claude": {
-        "baseUrl": "https://yunwu.ai/v1",
-        "apiKey": "sk-ZJgY8JJhvwPcfAsd5l9xmakOVSoqtqKezhRJhpmynwUpX2XK",
+        "baseUrl": "${CLAUDE_BASE_URL:-https://api.anthropic.com/v1}",
+        "apiKey": "${CLAUDE_API_KEY}",
         "api": "openai-completions",
         "models": [
           {
@@ -37,8 +37,8 @@
         ]
       },
       "gemini": {
-        "baseUrl": "https://yunwu.ai/v1",
-        "apiKey": "sk-RtP6ftVgFxeWgrYQALwCkpD3DASFccQz2PlCBzWHs47b3Ie3",
+        "baseUrl": "${GEMINI_BASE_URL:-https://generativelanguage.googleapis.com/v1beta}",
+        "apiKey": "${GEMINI_API_KEY}",
         "api": "openai-completions",
         "models": [
           {
@@ -55,10 +55,14 @@
   },
   "agents": {
     "defaults": {
-      "model": "claude/claude-sonnet-4-6",
+      "model": {
+        "primary": "claude/claude-sonnet-4-6",
+        "fallbacks": ["gemini/gemini-2.5-pro", "openai/gpt-4o"]
+      },
       "workspace": "~/.scienceclaw/workspace",
-      "bootstrapMaxChars": 50000,
-      "bootstrapTotalMaxChars": 300000,
+      "bootstrapMaxChars": 30000,
+      "bootstrapTotalMaxChars": 200000,
+      "timeoutSeconds": 3600,
       "contextPruning": {
         "mode": "cache-ttl",
         "ttl": "1h"
@@ -75,7 +79,10 @@
         "id": "scienceclaw",
         "default": true,
         "name": "ScienceClaw",
-        "model": "claude/claude-sonnet-4-6",
+        "model": {
+          "primary": "claude/claude-sonnet-4-6",
+          "fallbacks": ["gemini/gemini-2.5-pro", "openai/gpt-4o"]
+        },
         "identity": {
           "name": "ScienceClaw",
           "theme": "AI Research Colleague",
@@ -96,7 +103,7 @@
           {
             "provider": "openai",
             "model": "whisper-1",
-            "baseUrl": "https://yunwu.ai/v1"
+            "baseUrl": "${OPENAI_BASE_URL:-https://api.openai.com/v1}"
           }
         ]
       },
@@ -106,19 +113,9 @@
           {
             "provider": "openai",
             "model": "gpt-4o",
-            "baseUrl": "https://yunwu.ai/v1"
+            "baseUrl": "${OPENAI_BASE_URL:-https://api.openai.com/v1}"
           }
         ]
-      }
-    }
-  },
-  "messages": {
-    "tts": {
-      "auto": "inbound",
-      "provider": "openai",
-      "openai": {
-        "baseUrl": "https://yunwu.ai/v1",
-        "voice": "alloy"
       }
     }
   },
@@ -130,10 +127,10 @@
   },
   "channels": {
     "telegram": {
-      "enabled": true,
+      "enabled": false,
       "dmPolicy": "open",
       "allowFrom": ["*"],
-      "botToken": "YOUR_TELEGRAM_BOT_TOKEN",
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
       "groupPolicy": "open",
       "groupAllowFrom": ["*"],
       "streaming": "partial",
@@ -146,7 +143,7 @@
     "mode": "local",
     "auth": {
       "mode": "token",
-      "token": "88e208f802a8a1cc8c1848fb193d459cc07ad3ded15aa38a"
+      "token": "${GATEWAY_AUTH_TOKEN:-change-me-before-production}"
     }
   },
   "skills": {
@@ -157,13 +154,13 @@
     },
     "limits": {
       "maxCandidatesPerRoot": 300,
-      "maxSkillsLoadedPerSource": 300
+      "maxSkillsLoadedPerSource": 20
     }
   },
   "plugins": {
     "entries": {
       "telegram": {
-        "enabled": true
+        "enabled": false
       }
     }
   }

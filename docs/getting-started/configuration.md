@@ -126,10 +126,14 @@ Each provider defines a base URL, API key, API format, and available models.
 {
   "agents": {
     "defaults": {
-      "model": "claude/claude-sonnet-4-6",
+      "model": {
+        "primary": "claude/claude-sonnet-4-6",
+        "fallbacks": ["gemini/gemini-2.5-pro", "openai/gpt-4o"]
+      },
       "workspace": "~/.scienceclaw/workspace",
       "bootstrapMaxChars": 30000,
       "bootstrapTotalMaxChars": 200000,
+      "timeoutSeconds": 3600,
       "contextPruning": {
         "mode": "cache-ttl",
         "ttl": "1h"
@@ -146,7 +150,10 @@ Each provider defines a base URL, API key, API format, and available models.
         "id": "scienceclaw",
         "default": true,
         "name": "ScienceClaw",
-        "model": "claude/claude-sonnet-4-6",
+        "model": {
+          "primary": "claude/claude-sonnet-4-6",
+          "fallbacks": ["gemini/gemini-2.5-pro", "openai/gpt-4o"]
+        },
         "identity": {
           "name": "ScienceClaw",
           "theme": "AI Research Colleague",
@@ -165,10 +172,12 @@ Each provider defines a base URL, API key, API format, and available models.
 
 | Field | Description | Default |
 |-------|-------------|---------|
-| `defaults.model` | Default model in `provider/model-id` format | `claude/claude-sonnet-4-6` |
+| `defaults.model.primary` | Primary model in `provider/model-id` format | `claude/claude-sonnet-4-6` |
+| `defaults.model.fallbacks` | Fallback models tried in order if primary fails | `[]` |
 | `defaults.workspace` | Directory for agent file operations | `~/.scienceclaw/workspace` |
 | `defaults.bootstrapMaxChars` | Max characters per skill file loaded at startup | `30000` |
 | `defaults.bootstrapTotalMaxChars` | Total character budget for all skills at startup | `200000` |
+| `defaults.timeoutSeconds` | Max execution time per agent task | `3600` |
 | `defaults.contextPruning.ttl` | How long context entries stay before pruning | `1h` |
 | `defaults.compaction.mode` | Context compaction strategy | `safeguard` |
 | `agents.list[].model` | Model override for this specific agent | inherits from defaults |
@@ -176,16 +185,35 @@ Each provider defines a base URL, API key, API format, and available models.
 
 ### Switching Models
 
-To change the model ScienceClaw uses, update the `model` field in the agent definition. The format is `provider/model-id`:
+The `model` field supports two formats:
+
+**Simple** (single model, no fallback):
 
 ```json
-"model": "claude/claude-sonnet-4-6"    // Claude Sonnet 4.6
-"model": "claude/claude-opus-4-6"      // Claude Opus 4.6 (highest quality)
-"model": "openai/gpt-4o"              // GPT-4o
-"model": "openai/o4-mini"             // o4 Mini (fast reasoning)
-"model": "gemini/gemini-2.5-pro"      // Gemini 2.5 Pro
-"model": "gemini/gemini-2.5-flash"    // Gemini 2.5 Flash (fastest)
+"model": "claude/claude-sonnet-4-6"
 ```
+
+**With fallbacks** (automatic failover):
+
+```json
+"model": {
+  "primary": "claude/claude-sonnet-4-6",
+  "fallbacks": ["gemini/gemini-2.5-pro", "openai/gpt-4o"]
+}
+```
+
+When fallbacks are configured, if the primary model is unavailable or returns an error, the gateway automatically tries each fallback in order.
+
+Available models (`provider/model-id`):
+
+| Model | Notes |
+|-------|-------|
+| `claude/claude-sonnet-4-6` | Best balance of quality and speed (default) |
+| `claude/claude-opus-4-6` | Highest reasoning quality, slower |
+| `openai/gpt-4o` | Strong general-purpose alternative |
+| `openai/o4-mini` | Fast reasoning model |
+| `gemini/gemini-2.5-pro` | Strong reasoning, large context |
+| `gemini/gemini-2.5-flash` | Fastest and cheapest option |
 
 Restart the gateway after changing models:
 
@@ -280,10 +308,10 @@ Chat channels (Telegram, Discord, Slack, etc.) are configured here. Each channel
 {
   "channels": {
     "telegram": {
-      "enabled": true,
+      "enabled": false,
       "dmPolicy": "open",
       "allowFrom": ["*"],
-      "botToken": "<YOUR_BOT_TOKEN>",
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
       "groupPolicy": "open",
       "groupAllowFrom": ["*"],
       "streaming": "partial",
