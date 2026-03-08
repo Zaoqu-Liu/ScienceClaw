@@ -6,19 +6,41 @@ Connect ScienceClaw to WhatsApp so users can interact with your agent through Wh
 
 ## Prerequisites
 
-- ScienceClaw installed and on your `PATH`
-- Gateway running (`scienceclaw run`) on `ws://127.0.0.1:18789`
+- ScienceClaw installed (`bash scripts/setup.sh` completed)
+- A `.env` file with at least one LLM provider configured
 - A phone with WhatsApp installed and an active account
 
-## Step 1: Enable the WhatsApp Plugin
+## Step 1: Add the Channel to ScienceClaw
 
-The WhatsApp plugin is disabled by default. Enable it first:
+Add the WhatsApp channel section to `openclaw.config.json` inside the `"channels"` object:
 
-```bash
-scienceclaw plugins enable whatsapp
+```json
+{
+  "channels": {
+    "telegram": { ... },
+    "whatsapp": {
+      "enabled": true,
+      "dmPolicy": "open",
+      "allowFrom": ["*"]
+    }
+  }
+}
 ```
 
-## Step 2: Ensure the Gateway Is Running
+Add the WhatsApp plugin to the `"plugins"` section:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "telegram": { "enabled": true },
+      "whatsapp": { "enabled": true }
+    }
+  }
+}
+```
+
+## Step 2: Start the Gateway
 
 ```bash
 scienceclaw run
@@ -60,20 +82,19 @@ If the session expires, run the login command again:
 scienceclaw channels login --channel whatsapp
 ```
 
-## Re-authentication
+## Verify
 
-If the bot stops responding and `scienceclaw channels status` shows WhatsApp as disconnected:
+```bash
+scienceclaw channels status
+```
 
-1. Stop the gateway: `scienceclaw stop`
-2. Re-login: `scienceclaw channels login --channel whatsapp`
-3. Scan the QR code again.
-4. Restart: `scienceclaw run`
+You should see the WhatsApp channel listed as running.
 
 ## Troubleshooting
 
 **QR code does not appear**
 - Make sure the gateway is running before calling the login command.
-- Check terminal encoding — some terminals do not render QR codes correctly. Try a different terminal emulator or resize the window.
+- Some terminals do not render QR codes correctly. Try a different terminal emulator or resize the window.
 
 **Bot disconnects frequently**
 - This can happen if WhatsApp detects unusual activity. Avoid sending a high volume of messages in a short period.
@@ -81,4 +102,10 @@ If the bot stops responding and `scienceclaw channels status` shows WhatsApp as 
 
 **Messages are delivered but no reply is sent**
 - Run `scienceclaw channels status` to confirm the WhatsApp channel is active.
-- Check gateway logs for errors related to message processing.
+- Check gateway logs for errors: `tail -50 ~/.scienceclaw/gateway.log`
+
+**Re-authentication needed**
+1. Stop the gateway: `scienceclaw stop`
+2. Re-login: `scienceclaw channels login --channel whatsapp`
+3. Scan the QR code again.
+4. Restart: `scienceclaw run`

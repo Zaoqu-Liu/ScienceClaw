@@ -2,16 +2,16 @@
 
 [← Back to Channel Overview](README.md)
 
-Connect ScienceClaw to WeChat or WeCom (企业微信). Direct WeChat personal account integration is not natively supported due to platform restrictions, so this guide covers two alternative approaches.
+Connect ScienceClaw to WeChat or WeCom (企业微信). Direct WeChat personal account integration is not natively supported due to platform restrictions, so this guide covers two approaches.
 
 ## Prerequisites
 
-- ScienceClaw installed and on your `PATH`
-- Gateway running (`scienceclaw run`) on `ws://127.0.0.1:18789`
+- ScienceClaw installed (`bash scripts/setup.sh` completed)
+- A `.env` file with at least one LLM provider configured
 
 ---
 
-## Approach A: WeCom (Enterprise WeChat) Robot — Recommended
+## Approach A: WeCom (Enterprise WeChat) — Recommended
 
 WeCom provides an official bot API and is the more stable, production-ready option.
 
@@ -27,13 +27,50 @@ WeCom provides an official bot API and is the more stable, production-ready opti
 2. Note the **Token** and **EncodingAESKey** for message verification.
 3. Go to **Credentials** and copy the **Corp ID** and **Agent Secret**.
 
-### Step 3: Add the Channel
+### Step 3: Add the Channel to ScienceClaw
+
+Add credentials to `.env`:
 
 ```bash
-scienceclaw channels add --channel wecom --corp-id <CORP_ID> --agent-secret <AGENT_SECRET> --token <TOKEN> --aes-key <AES_KEY>
+WECOM_CORP_ID=your_corp_id
+WECOM_AGENT_SECRET=your_agent_secret
+WECOM_TOKEN=your_token
+WECOM_AES_KEY=your_encoding_aes_key
 ```
 
-### Step 4: Restart the Gateway and Test
+Add the WeCom channel section to `openclaw.config.json` inside the `"channels"` object:
+
+```json
+{
+  "channels": {
+    "telegram": { ... },
+    "wecom": {
+      "enabled": true,
+      "corpId": "${WECOM_CORP_ID}",
+      "agentSecret": "${WECOM_AGENT_SECRET}",
+      "token": "${WECOM_TOKEN}",
+      "aesKey": "${WECOM_AES_KEY}",
+      "dmPolicy": "open",
+      "allowFrom": ["*"]
+    }
+  }
+}
+```
+
+Add the WeCom plugin to the `"plugins"` section:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "telegram": { "enabled": true },
+      "wecom": { "enabled": true }
+    }
+  }
+}
+```
+
+### Step 4: Start and Test
 
 ```bash
 scienceclaw stop && scienceclaw run
@@ -57,13 +94,13 @@ Or use another puppet provider (e.g., `wechaty-puppet-padlocal` for better relia
 
 ### Step 2: Create a Bridge Script
 
-Write a small Node.js script that:
+Write a Node.js script that:
 
 1. Initializes a Wechaty instance.
 2. Forwards incoming messages to the OpenClaw gateway at `ws://127.0.0.1:18789`.
 3. Sends responses back through Wechaty.
 
-Refer to the [Wechaty documentation](https://wechaty.js.org/) for detailed API usage.
+Refer to the [Wechaty documentation](https://wechaty.js.org/) for API details.
 
 ### Step 3: Run the Bridge
 
@@ -79,13 +116,21 @@ Scan the QR code with your WeChat mobile app to log in.
 
 | Aspect | WeCom (Approach A) | Wechaty Bridge (Approach B) |
 |--------|-------------------|---------------------------|
-| Stability | High — official API | Low — depends on reverse-engineered protocols |
+| Stability | High — official API | Low — reverse-engineered protocols |
 | ToS Compliance | Fully compliant | Risk of account suspension |
 | Group Chat | Yes | Yes |
 | Setup Effort | Medium | High |
 | Maintenance | Low | High — puppets break with WeChat updates |
 
 **Recommendation:** Use WeCom for any production or long-term deployment. The Wechaty bridge is suitable for personal experimentation only.
+
+## Verify
+
+```bash
+scienceclaw channels status
+```
+
+You should see the WeCom/WeChat channel listed as running.
 
 ## Troubleshooting
 

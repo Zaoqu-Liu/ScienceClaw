@@ -14,7 +14,7 @@ services:
       - scienceclaw-workspace:/app/workspace
     depends_on:
       - sandbox
-    restart: unless-stopped
+    restart: always
 
   sandbox:
     build:

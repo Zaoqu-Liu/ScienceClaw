@@ -1,8 +1,9 @@
 #!/bin/bash
 # ScienceClaw — Your AI Research Colleague
-# Wrapper: source .env, set config path, auto-manage gateway, delegate to openclaw.
+# Wrapper: source .env, build runtime config, manage gateway lifecycle, delegate to openclaw.
 
-set -e
+# Do NOT use `set -e` globally — the watchdog and gateway lifecycle
+# must survive transient failures without killing the process tree.
 
 _resolve() {
   local src="${BASH_SOURCE[0]}"
@@ -19,45 +20,95 @@ export SCIENCECLAW_ROOT="$ROOT"
 
 [ -f "$ROOT/.env" ] && set -a && source "$ROOT/.env" && set +a
 
-RUNTIME_CONFIG="/tmp/scienceclaw-config.json"
+RUNTIME_DIR="$HOME/.scienceclaw"
+RUNTIME_CONFIG="$RUNTIME_DIR/runtime-config.json"
+GW_PORT=18789
+GW_LOG="$RUNTIME_DIR/gateway.log"
+GW_PID_FILE="$RUNTIME_DIR/gateway.pid"
+GW_WATCHDOG_PID_FILE="$RUNTIME_DIR/watchdog.pid"
+GW_WATCHDOG_INTERVAL="${SCIENCECLAW_WATCHDOG_INTERVAL:-30}"
+GW_LOG_MAX_BYTES="${SCIENCECLAW_LOG_MAX_BYTES:-10485760}"  # 10 MB
+CHANNEL_SCRIPT="$ROOT/scripts/channel.mjs"
+
+# ── Config builder ────────────────────────────────────────────────────
 
 _build_runtime_config() {
   local tpl="$ROOT/openclaw.config.json"
-  if [ ! -f "$tpl" ]; then
-    echo "  ❌ openclaw.config.json not found" >&2; return 1
-  fi
+  [ -f "$tpl" ] || { echo "  ❌ openclaw.config.json not found" >&2; return 1; }
+  mkdir -p "$RUNTIME_DIR"
+
   local content
   content=$(<"$tpl")
-  # Substitute ${VAR} and ${VAR:-default} patterns with env values
+
   while [[ "$content" =~ \$\{([A-Za-z_][A-Za-z_0-9]*)(\:\-([^\}]*))?\} ]]; do
     local var_name="${BASH_REMATCH[1]}"
     local default_val="${BASH_REMATCH[3]}"
     local actual_val="${!var_name:-$default_val}"
     content="${content//${BASH_REMATCH[0]}/$actual_val}"
   done
-  # Resolve relative ./skills to absolute path
   content="${content//\.\/skills/$ROOT/skills}"
+
+  if [ -n "${TELEGRAM_PROXY:-}" ]; then
+    local injected
+    injected=$(node -e "
+      const c = JSON.parse(process.argv[1]);
+      if (c.channels && c.channels.telegram) c.channels.telegram.proxy = process.env.TELEGRAM_PROXY;
+      process.stdout.write(JSON.stringify(c, null, 2));
+    " "$content" 2>/dev/null)
+    if [ -n "$injected" ]; then
+      content="$injected"
+    else
+      echo "  ⚠️  Failed to inject TELEGRAM_PROXY into config" >&2
+    fi
+  fi
+
   printf '%s' "$content" > "$RUNTIME_CONFIG"
 }
 
-_build_runtime_config || exit 1
-export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
+# ── OpenClaw discovery ────────────────────────────────────────────────
 
-OPENCLAW="$ROOT/node_modules/openclaw/openclaw.mjs"
-GW_PORT=18789
-GW_LOG="/tmp/scienceclaw-gateway.log"
-GW_PID_FILE="/tmp/scienceclaw-gateway.pid"
+_find_openclaw() {
+  local candidate="$ROOT/node_modules/openclaw/openclaw.mjs"
+  [ -f "$candidate" ] && { echo "$candidate"; return 0; }
 
-if [ ! -f "$OPENCLAW" ]; then
-  echo ""
-  echo "  ScienceClaw not installed yet. Run:"
-  echo "    cd $ROOT && bash scripts/setup.sh"
-  echo ""
-  exit 1
-fi
+  for f in "$ROOT"/node_modules/.pnpm/openclaw@*/node_modules/openclaw/openclaw.mjs; do
+    [ -f "$f" ] && { echo "$f"; return 0; }
+  done
 
-oc() { exec node "$OPENCLAW" "$@"; }
-oc_bg() { node "$OPENCLAW" "$@"; }
+  local resolved
+  resolved="$(node -e "try{console.log(require.resolve('openclaw/openclaw.mjs'))}catch{}" 2>/dev/null)"
+  [ -n "$resolved" ] && [ -f "$resolved" ] && { echo "$resolved"; return 0; }
+
+  return 1
+}
+
+_require_engine() {
+  if [ -z "${OPENCLAW:-}" ]; then
+    OPENCLAW="$(_find_openclaw)" || {
+      echo ""
+      echo "  OpenClaw engine not found. Run:"
+      echo "    cd $ROOT && bash scripts/setup.sh"
+      echo ""
+      exit 1
+    }
+  fi
+}
+
+oc() { _require_engine; exec node "$OPENCLAW" "$@"; }
+
+# ── Log rotation ──────────────────────────────────────────────────────
+
+_rotate_log() {
+  [ -f "$GW_LOG" ] || return 0
+  local size
+  size=$(wc -c < "$GW_LOG" 2>/dev/null | tr -d ' ') || return 0
+  if [ "${size:-0}" -gt "$GW_LOG_MAX_BYTES" ]; then
+    mv "$GW_LOG" "$GW_LOG.1" 2>/dev/null
+    : > "$GW_LOG"
+  fi
+}
+
+# ── Gateway process management ────────────────────────────────────────
 
 _find_gateway_pid() {
   if command -v lsof >/dev/null 2>&1; then
@@ -77,14 +128,13 @@ is_gateway_running() {
   elif command -v netstat >/dev/null 2>&1; then
     netstat -tlnp 2>/dev/null | grep -q ":${GW_PORT} "
   else
-    # Last resort: try connecting to the port
     (echo >/dev/tcp/127.0.0.1/"$GW_PORT") 2>/dev/null
   fi
 }
 
 wait_for_gateway() {
   local i=0
-  while [ $i -lt 20 ]; do
+  while [ $i -lt 30 ]; do
     is_gateway_running && return 0
     sleep 1
     i=$((i + 1))
@@ -92,84 +142,281 @@ wait_for_gateway() {
   return 1
 }
 
-ensure_gateway() {
-  if is_gateway_running; then
-    return 0
-  fi
-  echo "  🚀 Starting Gateway on port $GW_PORT ..."
+_start_gateway_process() {
+  _rotate_log
+  export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
   nohup node "$OPENCLAW" gateway run --force --port "$GW_PORT" \
-    > "$GW_LOG" 2>&1 &
+    >> "$GW_LOG" 2>&1 &
   local pid=$!
   echo "$pid" > "$GW_PID_FILE"
+  echo "$pid"
+}
+
+# ── Watchdog ──────────────────────────────────────────────────────────
+# Runs as a background process. Must NEVER exit on transient failures.
+# Uses its own error handling instead of set -e.
+
+_run_watchdog() {
+  trap '' HUP
+  local backoff=2
+  local max_backoff=120
+
+  while true; do
+    sleep "$GW_WATCHDOG_INTERVAL"
+
+    _rotate_log
+
+    if ! is_gateway_running 2>/dev/null; then
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] watchdog: gateway down, restarting (backoff ${backoff}s)..." >> "$GW_LOG" 2>/dev/null
+      sleep "$backoff"
+
+      [ -f "$ROOT/.env" ] && set -a && source "$ROOT/.env" 2>/dev/null && set +a
+      _build_runtime_config 2>/dev/null
+
+      _start_gateway_process > /dev/null 2>&1
+
+      if wait_for_gateway; then
+        local new_pid
+        new_pid=$(cat "$GW_PID_FILE" 2>/dev/null)
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] watchdog: recovered (PID ${new_pid:-?})" >> "$GW_LOG" 2>/dev/null
+        backoff=2
+      else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] watchdog: restart failed, retry in ${backoff}s" >> "$GW_LOG" 2>/dev/null
+        backoff=$((backoff * 2))
+        [ "$backoff" -gt "$max_backoff" ] && backoff=$max_backoff
+      fi
+    else
+      backoff=2
+    fi
+  done
+}
+
+_is_watchdog_alive() {
+  [ -f "$GW_WATCHDOG_PID_FILE" ] || return 1
+  local wpid
+  wpid=$(cat "$GW_WATCHDOG_PID_FILE" 2>/dev/null) || return 1
+  [ -n "$wpid" ] && kill -0 "$wpid" 2>/dev/null
+}
+
+_stop_watchdog() {
+  if [ -f "$GW_WATCHDOG_PID_FILE" ]; then
+    local wpid
+    wpid=$(cat "$GW_WATCHDOG_PID_FILE" 2>/dev/null)
+    if [ -n "$wpid" ] && kill -0 "$wpid" 2>/dev/null; then
+      kill "$wpid" 2>/dev/null
+      sleep 0.5
+      kill -0 "$wpid" 2>/dev/null && kill -9 "$wpid" 2>/dev/null
+    fi
+    rm -f "$GW_WATCHDOG_PID_FILE"
+  fi
+}
+
+_ensure_watchdog() {
+  if _is_watchdog_alive; then
+    return 0
+  fi
+  _stop_watchdog
+  _run_watchdog &
+  echo "$!" > "$GW_WATCHDOG_PID_FILE"
+  disown
+}
+
+# ── High-level commands ───────────────────────────────────────────────
+
+ensure_gateway() {
+  _require_engine
+  if is_gateway_running; then
+    _ensure_watchdog
+    return 0
+  fi
+  _build_runtime_config || return 1
+  echo "  🚀 Starting Gateway on port $GW_PORT ..."
+  _start_gateway_process > /dev/null
   if wait_for_gateway; then
-    echo "  ✅ Gateway ready (PID $pid)"
+    local pid
+    pid=$(cat "$GW_PID_FILE" 2>/dev/null)
+    echo "  ✅ Gateway ready (PID ${pid:-?})"
+    _ensure_watchdog
+    echo "  🛡️  Watchdog active (checks every ${GW_WATCHDOG_INTERVAL}s, auto-restarts on crash)"
     return 0
   else
-    echo "  ❌ Gateway failed to start. Log: $GW_LOG"
-    echo "     Tail of log:"
+    echo "  ❌ Gateway failed to start."
+    echo "     Log: $GW_LOG"
+    echo "     Tail:"
     tail -10 "$GW_LOG" 2>/dev/null | sed 's/^/     /'
     return 1
   fi
 }
 
 stop_gateway() {
+  _stop_watchdog
+
+  local stopped=false
   if [ -f "$GW_PID_FILE" ]; then
     local pid
-    pid=$(cat "$GW_PID_FILE")
-    if kill -0 "$pid" 2>/dev/null; then
+    pid=$(cat "$GW_PID_FILE" 2>/dev/null)
+    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
       kill "$pid" 2>/dev/null
       sleep 1
       kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
       echo "  ✅ Gateway stopped (PID $pid)"
-    else
-      echo "  ⚠️  PID $pid already gone"
+      stopped=true
     fi
     rm -f "$GW_PID_FILE"
-  elif is_gateway_running; then
+  fi
+
+  if ! $stopped && is_gateway_running; then
     local pid
     pid=$(_find_gateway_pid)
     if [ -n "$pid" ]; then
       kill "$pid" 2>/dev/null; sleep 1
       kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
       echo "  ✅ Gateway stopped (PID $pid)"
+      stopped=true
     fi
-  else
-    echo "  ⚠️  No gateway running"
   fi
+
+  $stopped || echo "  ⬜ No gateway running"
 }
 
+show_status() {
+  echo ""
+  if is_gateway_running; then
+    local gw_pid
+    gw_pid=$(_find_gateway_pid)
+    echo "  ✅ Gateway running (PID ${gw_pid:-?}, port $GW_PORT)"
+  else
+    echo "  ⬜ Gateway not running"
+  fi
+
+  if _is_watchdog_alive; then
+    echo "  🛡️  Watchdog active"
+  else
+    echo "  ⚠️  Watchdog not running"
+  fi
+
+  echo "  📋 Log: $GW_LOG"
+  echo "  📁 Config: $RUNTIME_CONFIG"
+
+  if [ -f "$GW_LOG" ]; then
+    local size
+    size=$(wc -c < "$GW_LOG" 2>/dev/null | tr -d ' ')
+    local size_mb=$(( ${size:-0} / 1048576 ))
+    echo "  📊 Log size: ${size_mb}MB / $((GW_LOG_MAX_BYTES / 1048576))MB"
+  fi
+  echo ""
+}
+
+show_help() {
+  echo ""
+  echo "  ScienceClaw — Your AI Research Colleague"
+  echo ""
+  echo "  Usage: ./scienceclaw <command>"
+  echo ""
+  echo "  Getting started:"
+  echo "    setup               Interactive setup wizard"
+  echo "    run                 Start gateway + open TUI"
+  echo "    stop                Stop gateway + watchdog"
+  echo "    restart             Restart gateway (rebuild config)"
+  echo "    status              Check gateway + watchdog status"
+  echo ""
+  echo "  Channels:"
+  echo "    add <channel>       Add a messaging channel"
+  echo "    remove <channel>    Remove a channel"
+  echo "    channels            List configured channels"
+  echo ""
+  echo "  Advanced:"
+  echo "    tui                 Open TUI (auto-starts gateway)"
+  echo "    dashboard           Open web dashboard"
+  echo "    start               Start gateway in foreground (no watchdog)"
+  echo "    ask \"query\"          One-shot query"
+  echo "    logs                Tail gateway logs"
+  echo ""
+  echo "  Supported channels:"
+  echo "    telegram  discord  slack  whatsapp  feishu  matrix  wechat"
+  echo ""
+}
+
+# ── Command dispatch ──────────────────────────────────────────────────
+# Config is built lazily — only for commands that need the gateway.
+
 case "${1:-}" in
-  setup)
-    bash "$ROOT/scripts/setup.sh"
+  # ─ no arguments → show scienceclaw help ─
+  "")
+    show_help
     ;;
+
+  # ─ gateway lifecycle ────────────────────
   run)
     ensure_gateway || exit 1
     echo ""
+    export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
     oc tui
     ;;
   tui)
     ensure_gateway || exit 1
     echo ""
     shift
+    export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
     oc tui "$@"
     ;;
   start)
+    _require_engine
+    _build_runtime_config || exit 1
+    export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
     shift
-    oc gateway run --force --port "$GW_PORT" "$@"
+    exec node "$OPENCLAW" gateway run --force --port "$GW_PORT" "$@"
+    ;;
+  restart)
+    stop_gateway
+    sleep 1
+    ensure_gateway || exit 1
+    echo ""
+    echo "  Gateway restarted with fresh config."
     ;;
   stop)
     stop_gateway
     ;;
   status)
-    if is_gateway_running; then
-      local_pid=$(_find_gateway_pid)
-      echo "  ✅ Gateway running (PID ${local_pid:-?}, port $GW_PORT)"
-      echo "  📋 Log: $GW_LOG"
+    show_status
+    ;;
+  logs)
+    tail -f "$GW_LOG" 2>/dev/null || echo "  No log file at $GW_LOG"
+    ;;
+
+  # ─ channel management (no engine needed) ─
+  add)
+    shift
+    node "$CHANNEL_SCRIPT" add "$@"
+    ;;
+  remove)
+    shift
+    node "$CHANNEL_SCRIPT" remove "$@"
+    ;;
+  channels)
+    if [ $# -le 1 ]; then
+      node "$CHANNEL_SCRIPT" list
     else
-      echo "  ⬜ Gateway not running"
+      _require_engine
+      _build_runtime_config || exit 1
+      export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
+      oc "$@"
     fi
     ;;
+
+  # ─ setup & help (no engine needed) ──────
+  setup)
+    bash "$ROOT/scripts/setup.sh"
+    ;;
+  help|--help|-h)
+    show_help
+    ;;
+
+  # ─ pass-through to openclaw CLI ─────────
   *)
+    _require_engine
+    _build_runtime_config || exit 1
+    export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
     oc "$@"
     ;;
 esac

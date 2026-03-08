@@ -68,7 +68,6 @@ services:
     working_dir: /app
     volumes:
       - .:/app
-      - ../openclaw:/openclaw
       - scienceclaw-data:/root/.scienceclaw
     ports:
       - "18789:18789"
@@ -78,8 +77,7 @@ services:
       - OPENCLAW_CONFIG_PATH=/app/openclaw.config.json
       - SCIENCECLAW_WORKSPACE=/root/.scienceclaw/workspace
     command: >
-      sh -c "cd /openclaw && npm install --silent && npm run build --silent &&
-             cd /app && npm install --silent &&
+      sh -c "cd /app && npm install --silent &&
              node /app/node_modules/openclaw/openclaw.mjs gateway run --force --port 18789"
     restart: unless-stopped
 

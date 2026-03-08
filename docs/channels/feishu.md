@@ -6,8 +6,8 @@ Connect ScienceClaw to Feishu (飞书) or Lark so users can interact with your a
 
 ## Prerequisites
 
-- ScienceClaw installed and on your `PATH`
-- Gateway running (`scienceclaw run`) on `ws://127.0.0.1:18789`
+- ScienceClaw installed (`bash scripts/setup.sh` completed)
+- A `.env` file with at least one LLM provider configured
 - Admin access to a Feishu or Lark tenant
 
 ## Step 1: Create a Custom App
@@ -26,7 +26,7 @@ Connect ScienceClaw to Feishu (飞书) or Lark so users can interact with your a
 ## Step 3: Configure Event Subscriptions
 
 1. Go to **Features** → **Events & Callbacks**.
-2. Set the **Request URL** to the address where OpenClaw can receive events. If running locally, you may need a tunnel (e.g., ngrok) or configure Feishu's long-polling mode.
+2. Set the **Request URL** to the address where the gateway can receive events. If running locally, use a tunnel (e.g., ngrok) or configure Feishu's long-polling mode.
 3. Subscribe to these events:
    - `im.message.receive_v1` — receive messages
    - `im.message.message_read_v1` — read receipts (optional)
@@ -37,29 +37,52 @@ Connect ScienceClaw to Feishu (飞书) or Lark so users can interact with your a
 1. Go to **Credentials & Basic Info**.
 2. Copy the **App ID** and **App Secret**.
 
-## Step 5: Enable the Feishu Plugin
+## Step 5: Add the Channel to ScienceClaw
 
-The Feishu plugin is disabled by default. Enable it first:
-
-```bash
-scienceclaw plugins enable feishu
-```
-
-## Step 6: Add the Channel
+Add credentials to `.env`:
 
 ```bash
-scienceclaw channels add --channel feishu --app-id <APP_ID> --app-secret <APP_SECRET>
+FEISHU_APP_ID=cli_your_app_id
+FEISHU_APP_SECRET=your_app_secret
 ```
 
-Replace `<APP_ID>` and `<APP_SECRET>` with the values from Step 4.
+Add the Feishu channel section to `openclaw.config.json` inside the `"channels"` object:
 
-## Step 7: Publish and Deploy
+```json
+{
+  "channels": {
+    "telegram": { ... },
+    "feishu": {
+      "enabled": true,
+      "appId": "${FEISHU_APP_ID}",
+      "appSecret": "${FEISHU_APP_SECRET}",
+      "dmPolicy": "open",
+      "allowFrom": ["*"]
+    }
+  }
+}
+```
+
+Add the Feishu plugin to the `"plugins"` section:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "telegram": { "enabled": true },
+      "feishu": { "enabled": true }
+    }
+  }
+}
+```
+
+## Step 6: Publish the App
 
 1. Go to **App Release** → **Version Management**.
 2. Create a new version and submit for review. For enterprise-internal apps, approval is usually instant.
 3. Once published, add the bot to a Feishu group or send it a direct message.
 
-## Step 8: Restart the Gateway and Test
+## Step 7: Start and Test
 
 ```bash
 scienceclaw stop && scienceclaw run
@@ -67,14 +90,22 @@ scienceclaw stop && scienceclaw run
 
 In a Feishu group, @mention the bot. It should reply through ScienceClaw.
 
-## Event Subscription Configuration
+## Event Delivery Modes
 
 Feishu supports two event delivery modes:
 
 - **Webhook (push):** Feishu sends HTTP POST requests to your server. Requires a publicly accessible URL.
 - **Long-polling (pull):** Your app pulls events from Feishu. No public URL needed — better for local development.
 
-If you are behind a firewall or running locally, use long-polling. Check the Feishu Open Platform docs for details on enabling it.
+If you are behind a firewall or running locally, use long-polling. See the Feishu Open Platform docs for details.
+
+## Verify
+
+```bash
+scienceclaw channels status
+```
+
+You should see the Feishu channel listed as running.
 
 ## Troubleshooting
 

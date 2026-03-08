@@ -2,16 +2,6 @@
 
 ScienceClaw connects to messaging platforms through the **OpenClaw** gateway, letting your AI agent respond to users on Telegram, Discord, Slack, WhatsApp, and more — all from a single running instance. Each channel runs as a separate adapter within the gateway, and you can enable as many as you need simultaneously.
 
-## Quick Setup
-
-The fastest way to add a channel is the interactive configuration wizard:
-
-```bash
-scienceclaw configure
-```
-
-This walks you through selecting a platform, entering credentials, and verifying the connection. For manual setup, see the individual guides below.
-
 ## Channel Comparison
 
 | Channel | Group Chat | Images | Voice | Setup Difficulty | Guide |
@@ -25,22 +15,29 @@ This walks you through selecting a platform, entering credentials, and verifying
 | Web Dashboard | No | Yes | No | Easy | [web.md](web.md) |
 | Matrix | Yes | Yes | No | Medium | [matrix.md](matrix.md) |
 
+## How Channels Work
+
+ScienceClaw is a zero-code wrapper around OpenClaw. Channel configuration lives in `openclaw.config.json` at the project root. The `scienceclaw` wrapper script reads your `.env` file, substitutes environment variables into the config, and starts the gateway.
+
+- **Telegram** is pre-configured — just set `TELEGRAM_BOT_TOKEN` in `.env`.
+- **Other channels** are added by editing `openclaw.config.json` directly.
+
 ## Common Commands
 
 ```bash
-# Enable a channel plugin (required before first use)
-scienceclaw plugins enable <channel-name>
+# Start gateway + TUI (auto-starts gateway on port 18789)
+scienceclaw run
 
-# Add a channel
-scienceclaw channels add --channel <name> [options]
+# Stop the gateway
+scienceclaw stop
 
-# Log in to a channel that requires interactive auth (e.g. WhatsApp QR)
-scienceclaw channels login --channel <name>
+# Check gateway status
+scienceclaw status
 
-# Check status of all configured channels
+# Check channel status (delegated to OpenClaw)
 scienceclaw channels status
 
-# Interactive setup wizard
+# Interactive setup wizard (delegated to OpenClaw)
 scienceclaw configure
 ```
 
@@ -48,10 +45,21 @@ scienceclaw configure
 
 All channel guides assume:
 
-1. **ScienceClaw is installed** and available on your `PATH`.
-2. **The gateway is running** — start it with `scienceclaw run` if it is not. The gateway listens on `ws://127.0.0.1:18789` by default.
+1. **ScienceClaw is installed** — `bash scripts/setup.sh` completed successfully.
+2. **You have a `.env` file** with at least one LLM provider configured (copy from `.env.example`).
 3. You have **admin or owner access** on the target platform to create bots or apps.
+
+## China / Restricted Networks
+
+If you are in China or behind a restrictive firewall, platforms like Telegram and Discord may be unreachable without a proxy. ScienceClaw supports proxy configuration via `.env`:
+
+```bash
+# Telegram proxy (SOCKS5 or HTTP)
+TELEGRAM_PROXY=socks5://127.0.0.1:1080
+```
+
+See the [Telegram guide](telegram.md) for detailed proxy setup. For Discord and other channels, configure your system-level proxy or use a VPN.
 
 ## Next Steps
 
-Pick a channel from the table above and follow its guide. If you run into issues, each guide includes a troubleshooting section. You can also run `scienceclaw channels status` at any time to verify your connections.
+Pick a channel from the table above and follow its guide. If you run into issues, each guide includes a troubleshooting section.

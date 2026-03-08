@@ -57,12 +57,16 @@
     "defaults": {
       "model": {
         "primary": "claude/claude-sonnet-4-6",
-        "fallbacks": ["gemini/gemini-2.5-pro", "openai/gpt-4o"]
+        "fallbacks": [
+          "gemini/gemini-2.5-pro",
+          "openai/gpt-4o"
+        ]
       },
       "workspace": "~/.scienceclaw/workspace",
       "bootstrapMaxChars": 30000,
       "bootstrapTotalMaxChars": 200000,
       "timeoutSeconds": 3600,
+      "maxConcurrent": 5,
       "contextPruning": {
         "mode": "cache-ttl",
         "ttl": "1h"
@@ -79,10 +83,6 @@
         "id": "scienceclaw",
         "default": true,
         "name": "ScienceClaw",
-        "model": {
-          "primary": "claude/claude-sonnet-4-6",
-          "fallbacks": ["gemini/gemini-2.5-pro", "openai/gpt-4o"]
-        },
         "identity": {
           "name": "ScienceClaw",
           "theme": "AI Research Colleague",
@@ -129,13 +129,28 @@
     "telegram": {
       "enabled": true,
       "dmPolicy": "open",
-      "allowFrom": ["*"],
+      "allowFrom": [
+        "*"
+      ],
       "botToken": "${TELEGRAM_BOT_TOKEN}",
       "groupPolicy": "open",
-      "groupAllowFrom": ["*"],
+      "groupAllowFrom": [
+        "*"
+      ],
       "streaming": "partial",
       "commands": {
         "native": false
+      },
+      "timeoutSeconds": 90,
+      "retry": {
+        "attempts": 5,
+        "minDelayMs": 500,
+        "maxDelayMs": 30000,
+        "jitter": 0.2
+      },
+      "network": {
+        "autoSelectFamily": false,
+        "dnsResultOrder": "ipv4first"
       }
     }
   },
@@ -154,7 +169,7 @@
     },
     "limits": {
       "maxCandidatesPerRoot": 300,
-      "maxSkillsLoadedPerSource": 20
+      "maxSkillsLoadedPerSource": 40
     }
   },
   "plugins": {

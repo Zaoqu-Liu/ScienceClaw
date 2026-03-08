@@ -73,27 +73,28 @@ ScienceClaw conducted a systematic literature search across PubMed, Semantic Sch
 
 </div>
 
-### Step 1 — Clone and configure
+### Step 1 — Clone and setup
 
 ```bash
 git clone https://github.com/Zaoqu-Liu/ScienceClaw.git
 cd ScienceClaw
-cp .env.example .env        # add your API keys
+bash scripts/setup.sh       # installs everything, configures API key + channels
 ```
 
-### Step 2 — Install dependencies
-
-```bash
-bash scripts/setup.sh
-```
-
-### Step 3 — Run
+### Step 2 — Run
 
 ```bash
 ./scienceclaw run            # auto-starts gateway + opens TUI
 ```
 
-That's it. One command.
+That's it. Two commands.
+
+### Add a messaging channel (optional)
+
+```bash
+./scienceclaw add telegram   # or discord, slack, whatsapp, feishu, matrix, wechat
+./scienceclaw channels       # see what's configured
+```
 
 For one-shot mode, skip the TUI entirely:
 
