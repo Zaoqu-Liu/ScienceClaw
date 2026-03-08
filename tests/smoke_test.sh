@@ -47,12 +47,15 @@ else
   FAIL=$((FAIL + 1))
 fi
 
-# openclaw engine check — skip in CI (local file: dependency)
+# openclaw engine check
 if [ -d node_modules/openclaw ]; then
   echo "  PASS: node_modules/openclaw exists"
   PASS=$((PASS + 1))
+elif [ -n "${CI:-}" ]; then
+  echo "  SKIP: node_modules/openclaw not installed (no pnpm install in CI lint job)"
 else
-  echo "  SKIP: node_modules/openclaw not installed (expected in CI)"
+  echo "  FAIL: node_modules/openclaw not installed (run: bash scripts/setup.sh)"
+  FAIL=$((FAIL + 1))
 fi
 
 echo ""

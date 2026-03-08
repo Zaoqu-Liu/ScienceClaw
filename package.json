@@ -33,7 +33,7 @@
   },
   "author": "LIU Zaoqu <liuzaoqu@163.com>",
   "dependencies": {
-    "openclaw": "file:../openclaw"
+    "openclaw": "^2026.3.0"
   },
   "engines": {
     "node": ">=22.12.0"

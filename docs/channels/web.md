@@ -6,14 +6,16 @@ ScienceClaw includes a built-in web dashboard that lets you interact with your a
 
 ## Prerequisites
 
-- ScienceClaw installed and on your `PATH`
-- Gateway running (`scienceclaw run`) on `ws://127.0.0.1:18789`
+- ScienceClaw installed (`bash scripts/setup.sh` completed)
+- A `.env` file with at least one LLM provider configured
 
-## Step 1: Ensure the Gateway Is Running
+## Step 1: Start the Gateway
 
 ```bash
 scienceclaw run
 ```
+
+This starts the gateway on port 18789 and opens the TUI.
 
 ## Step 2: Launch the Dashboard
 
@@ -67,13 +69,21 @@ server {
 }
 ```
 
-Make sure to include WebSocket upgrade headers since the dashboard uses WebSocket connections.
+Include WebSocket upgrade headers since the dashboard uses WebSocket connections.
 
 ## Security Notes
 
 - Never expose the dashboard directly to the public internet without authentication and HTTPS.
 - The login token is printed to the terminal and should be treated as a secret.
 - If running on a shared server, ensure file permissions on ScienceClaw's configuration directory are restricted to your user.
+
+## Verify
+
+Confirm the gateway is running:
+
+```bash
+scienceclaw status
+```
 
 ## Troubleshooting
 

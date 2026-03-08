@@ -46,7 +46,7 @@ node -v
 nvm install 22 && nvm use 22
 ```
 
-#### OpenClaw Engine Not Built
+#### OpenClaw Engine Not Installed
 
 ```bash
 # Check if the engine exists
@@ -56,17 +56,20 @@ ls node_modules/openclaw/openclaw.mjs
 bash scripts/setup.sh
 ```
 
-#### OpenClaw Directory Not Found
+#### OpenClaw Engine Not Found
 
-The `openclaw/` directory must be at the same level as `scienceclaw/`:
+The OpenClaw engine is installed as an npm dependency. Re-run setup to install it:
 
-```
-parent-dir/
-  openclaw/       # Must exist here
-  scienceclaw/    # You are here
+```bash
+bash scripts/setup.sh
 ```
 
-If it's in a different location, re-run setup or adjust the `file:` reference in `package.json`.
+If the problem persists, try a clean install:
+
+```bash
+rm -rf node_modules
+bash scripts/setup.sh
+```
 
 ---
 
@@ -327,7 +330,7 @@ tail -50 /tmp/scienceclaw-gateway.log
 # Check Node.js version
 node -v
 
-# Check if pnpm dependencies are installed
+# Check if dependencies are installed
 ls node_modules/openclaw/openclaw.mjs
 
 # Test API key

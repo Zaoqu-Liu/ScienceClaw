@@ -6,8 +6,8 @@ Connect ScienceClaw to Discord so users can interact with your agent in Discord 
 
 ## Prerequisites
 
-- ScienceClaw installed and on your `PATH`
-- Gateway running (`scienceclaw run`) on `ws://127.0.0.1:18789`
+- ScienceClaw installed (`bash scripts/setup.sh` completed)
+- A `.env` file with at least one LLM provider configured
 - A Discord account with permission to add bots to a server
 
 ## Step 1: Create a Discord Application
@@ -35,31 +35,65 @@ Connect ScienceClaw to Discord so users can interact with your agent in Discord 
 4. Copy the generated URL and open it in your browser.
 5. Select the server you want to add the bot to and authorize it.
 
-## Step 4: Enable the Discord Plugin
+## Step 4: Add the Channel to ScienceClaw
 
-The Discord plugin is disabled by default. Enable it first:
-
-```bash
-scienceclaw plugins enable discord
-```
-
-## Step 5: Add the Channel
+Add your bot token to `.env`:
 
 ```bash
-scienceclaw channels add --channel discord --token <BOT_TOKEN>
+DISCORD_BOT_TOKEN=your-discord-bot-token
 ```
 
-Replace `<BOT_TOKEN>` with the token from Step 2.
+Then add the Discord channel section to `openclaw.config.json`. Insert this inside the `"channels"` object (alongside the existing `"telegram"` section):
 
-> **Note:** ScienceClaw has 264+ skills that may be registered as slash commands. If you see `BOT_COMMANDS_TOO_MUCH` errors in the logs, add `"commands": { "native": false }` to the `channels.discord` section in `openclaw.config.json`.
+```json
+{
+  "channels": {
+    "telegram": { ... },
+    "discord": {
+      "enabled": true,
+      "dmPolicy": "open",
+      "allowFrom": ["*"],
+      "botToken": "${DISCORD_BOT_TOKEN}",
+      "groupPolicy": "open",
+      "groupAllowFrom": ["*"],
+      "commands": {
+        "native": false
+      }
+    }
+  }
+}
+```
 
-## Step 6: Restart the Gateway and Test
+Also add the Discord plugin to the `"plugins"` section:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "telegram": { "enabled": true },
+      "discord": { "enabled": true }
+    }
+  }
+}
+```
+
+> **Why `commands.native: false`?** ScienceClaw has 264+ skills. Discord's slash command limit may cause registration errors. Disable native commands and use natural language instead.
+
+## Step 5: Start and Test
 
 ```bash
 scienceclaw stop && scienceclaw run
 ```
 
 Go to your Discord server and send a message in a channel the bot can see. The bot should reply.
+
+## Verify
+
+```bash
+scienceclaw channels status
+```
+
+You should see the Discord channel listed as running.
 
 ## Troubleshooting
 
@@ -68,7 +102,10 @@ Go to your Discord server and send a message in a channel the bot can see. The b
 - Check that the bot has Read and Send permissions in the channel you are testing.
 
 **"Used disallowed intents" error in logs**
-- You enabled intents in the code but not in the Developer Portal. Go to **Bot** → **Privileged Gateway Intents** and toggle them on.
+- You enabled intents in the config but not in the Developer Portal. Go to **Bot** → **Privileged Gateway Intents** and toggle them on.
 
 **Bot does not appear in the server member list**
 - The invite URL may not have included the `bot` scope. Regenerate the OAuth2 URL with the correct scopes and re-invite.
+
+**Connection issues in China**
+- Discord servers may be unreachable without a VPN or system-level proxy. ScienceClaw does not have a built-in proxy for Discord (unlike Telegram). Configure your system proxy or VPN before starting.

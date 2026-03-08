@@ -47,41 +47,12 @@ npm install -g pnpm
 
 ---
 
-## Step 1: Clone the Repositories
-
-ScienceClaw runs on the [OpenClaw](https://github.com/openclaw/openclaw) engine. Both repositories should live side by side.
+## Step 1: Clone and Configure
 
 ```bash
-mkdir -p ~/scienceclaw-workspace && cd ~/scienceclaw-workspace
-
-# Clone the engine
-git clone https://github.com/openclaw/openclaw.git
-
-# Clone ScienceClaw
-git clone https://github.com/Zaoqu-Liu/scienceclaw.git
-
-# Verify structure
-ls
-# openclaw/    scienceclaw/
-```
-
-The directory structure should look like:
-
-```
-scienceclaw-workspace/
-  openclaw/          # The engine (WebSocket gateway + TUI)
-  scienceclaw/       # This project (SCIENCE.md + 264 skills)
-```
-
----
-
-## Step 2: Create Your `.env` File
-
-Copy the example environment file and add your API key:
-
-```bash
-cd scienceclaw
-cp .env.example .env
+git clone https://github.com/Zaoqu-Liu/ScienceClaw.git
+cd ScienceClaw
+cp .env.example .env        # add your API keys
 ```
 
 Edit `.env` with your preferred editor. You need **at least one LLM provider** configured.
@@ -146,9 +117,9 @@ LLM_API_KEY=your-gemini-key
 
 ---
 
-## Step 3: Run Setup
+## Step 2: Run Setup
 
-The setup script checks prerequisites, builds the OpenClaw engine, installs dependencies, and configures your API key:
+The setup script checks prerequisites, installs the OpenClaw engine from npm, and configures your API key:
 
 ```bash
 bash scripts/setup.sh
@@ -156,10 +127,9 @@ bash scripts/setup.sh
 
 What the script does:
 
-1. **Checks prerequisites** -- verifies Node.js >= 22 and pnpm are installed
-2. **Builds the OpenClaw engine** -- runs `pnpm install && pnpm build` in `../openclaw` (first time only, ~30 seconds)
-3. **Installs ScienceClaw dependencies** -- runs `pnpm install` in the scienceclaw directory
-4. **Configures API key** -- if `.env` doesn't exist, prompts you interactively
+1. **Checks prerequisites** -- verifies Node.js >= 22 and pnpm (or npm) are installed
+2. **Installs dependencies** -- runs `pnpm install` which pulls the OpenClaw engine from npm automatically
+3. **Configures API key** -- if `.env` doesn't exist, prompts you interactively
 
 Expected output:
 
@@ -170,8 +140,8 @@ Expected output:
   [1/3] Checking prerequisites...
     Node.js v22.12.0, pnpm 9.15.4
 
-  [2/3] Engine...
-    Already built.
+  [2/3] Installing dependencies...
+    Done.
 
   [3/3] API Key...
     .env exists. Skipping.
@@ -179,13 +149,14 @@ Expected output:
   =================================
   Setup complete!
 
-    scienceclaw gateway run    # Terminal 1
-    scienceclaw tui            # Terminal 2
+    ./scienceclaw run            # Start gateway + open TUI
+    ./scienceclaw ask "query"    # One-shot mode
+    ./scienceclaw stop           # Stop background gateway
 ```
 
 ---
 
-## Step 4: Verify Installation
+## Step 3: Verify Installation
 
 ### Check the CLI
 
@@ -223,14 +194,12 @@ If this works, your installation is complete.
 
 ## Troubleshooting Installation
 
-### "openclaw not found at ../openclaw"
+### "OpenClaw engine not found"
 
-The OpenClaw engine directory must be at the same level as scienceclaw:
+Run setup again to install dependencies:
 
-```
-parent-dir/
-  openclaw/       # <-- must exist here
-  scienceclaw/
+```bash
+bash scripts/setup.sh
 ```
 
 ### "Node.js >= 22 required"
