@@ -157,31 +157,44 @@ Always list all output files with their full paths so the user can find them:
 
 ## Academic Literature Search
 
-You have multiple approaches. Use them in combination.
+**Use `bash` with `curl` for ALL searches.** Do NOT use `web_search` (it is disabled). Do NOT use `web_fetch` for academic APIs (SSRF filter may block them). Instead, always use `bash` to call `curl` directly.
 
-**1. web_search** -- broad discovery, fastest
-Use for initial exploration. Returns titles, snippets, URLs. Good starting point.
+**1. PubMed** -- biomedical literature, primary source
+```
+bash: curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=10&term=YOUR+QUERY"
+```
+Then fetch abstracts:
+```
+bash: curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=PMID1,PMID2,PMID3"
+```
 
-**2. web_fetch with academic APIs** -- structured, precise
-Query these open APIs directly for structured metadata (no API key required):
+**2. OpenAlex** -- broad academic, citation counts
+```
+bash: curl -s "https://api.openalex.org/works?search=YOUR+QUERY&per_page=10&select=id,title,authorships,publication_year,cited_by_count,doi,primary_location"
+```
 
-- **PubMed**: `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=10&term=YOUR+QUERY`
-  Then fetch abstracts: `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=PMID1,PMID2`
-- **OpenAlex**: `https://api.openalex.org/works?search=YOUR+QUERY&per_page=10&select=id,title,authorships,publication_year,cited_by_count,doi,primary_location`
-- **Semantic Scholar**: `https://api.semanticscholar.org/graph/v1/paper/search?query=YOUR+QUERY&limit=10&fields=title,authors,year,abstract,citationCount,externalIds,url`
-- **Europe PMC**: `https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=YOUR+QUERY&format=json&pageSize=10&resultType=core`
+**3. Semantic Scholar** -- citation context, related papers
+```
+bash: curl -s "https://api.semanticscholar.org/graph/v1/paper/search?query=YOUR+QUERY&limit=10&fields=title,authors,year,abstract,citationCount,externalIds,url"
+```
 
-**3. Read full papers** -- deep dive
-Use `web_fetch` with Jina Reader to extract full text from any paper URL:
-`https://r.jina.ai/PAPER_URL`
+**4. Europe PMC** -- European biomedical, full text access
+```
+bash: curl -s "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=YOUR+QUERY&format=json&pageSize=10&resultType=core"
+```
 
-**Strategy**: Start with web_search or OpenAlex for broad results. Use PubMed for biomedical specifics. Use Semantic Scholar for citation context. Read full text of the most relevant papers via Jina Reader. Always cross-reference across sources.
+**5. Read full papers** -- deep dive via Jina Reader
+```
+bash: curl -s "https://r.jina.ai/PAPER_URL"
+```
+
+**Strategy**: Start with PubMed for biomedical topics. Use OpenAlex for broader results and citation counts. Use Semantic Scholar for citation context. Read full text of the most relevant papers via Jina Reader. Always cross-reference across sources. Combine multiple curl calls in a single bash block.
 
 ---
 
 ## Scientific Database Queries
 
-Use `web_fetch` to query database REST APIs directly. The most important ones:
+Use `bash` with `curl` to query database REST APIs directly. The most important ones:
 
 **Genomics & Transcriptomics**
 - **NCBI Gene**: `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&retmode=json&term=GENE_NAME+AND+human[orgn]`
@@ -207,7 +220,7 @@ Use `web_fetch` to query database REST APIs directly. The most important ones:
 - **Enrichr**: `https://maayanlab.cloud/Enrichr/addList` (POST gene list), then `https://maayanlab.cloud/Enrichr/enrich?userListId=ID&backgroundType=KEGG_2021_Human`
 - **Reactome**: `https://reactome.org/ContentService/search/query?query=GENE_NAME&types=Pathway&species=Homo+sapiens`
 
-For databases not listed here, use `web_search` to find their API documentation first, then query via `web_fetch`.
+For databases not listed here, use `bash` with `curl` to query their REST APIs. All URLs above should be called via `bash: curl -s "URL"` rather than `web_fetch`.
 
 ---
 

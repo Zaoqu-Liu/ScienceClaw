@@ -97,16 +97,12 @@
   "tools": {
     "web": {
       "search": {
-        "enabled": true,
-        "provider": "kimi",
-        "kimi": {
-          "apiKey": "${OPENAI_API_KEY}",
-          "baseUrl": "${OPENAI_BASE_URL:-https://yunwu.ai/v1}"
-        }
+        "enabled": false
       },
       "fetch": {
         "enabled": true,
-        "timeoutSeconds": 30
+        "timeoutSeconds": 30,
+        "maxChars": 50000
       }
     },
     "media": {
