@@ -95,6 +95,20 @@
     ]
   },
   "tools": {
+    "web": {
+      "search": {
+        "enabled": true,
+        "provider": "kimi",
+        "kimi": {
+          "apiKey": "${OPENAI_API_KEY}",
+          "baseUrl": "${OPENAI_BASE_URL:-https://yunwu.ai/v1}"
+        }
+      },
+      "fetch": {
+        "enabled": true,
+        "timeoutSeconds": 30
+      }
+    },
     "media": {
       "audio": {
         "enabled": true,
