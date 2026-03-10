@@ -1,0 +1,59 @@
+FROM node:22-slim AS base
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV JULIA_VERSION=1.10.7
+
+# System libraries for R, Python scientific, and image rendering
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-venv \
+    build-essential gfortran \
+    liblapack-dev libblas-dev libhdf5-dev \
+    libxml2-dev libcurl4-openssl-dev libssl-dev \
+    libfontconfig1-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev \
+    libharfbuzz-dev libfribidi-dev \
+    r-base r-base-dev \
+    wget curl ca-certificates zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python scientific packages
+RUN pip install --no-cache-dir --break-system-packages \
+    numpy pandas scipy matplotlib seaborn \
+    scikit-learn statsmodels biopython scanpy plotly \
+    python-pptx Pillow openpyxl
+
+# R packages
+RUN R -e "install.packages(c('ggplot2', 'tidyverse', 'survival', 'survminer', 'BiocManager'), repos='https://cloud.r-project.org/')" \
+    && R -e "BiocManager::install(c('DESeq2', 'ComplexHeatmap'), ask=FALSE, update=FALSE)"
+
+# Julia (optional, skip on arm to save build time)
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then \
+      JULIA_ARCH="x86_64" && \
+      wget -q "https://julialang-s3.julialang.org/bin/linux/${JULIA_ARCH}/${JULIA_VERSION%.*}/julia-${JULIA_VERSION}-linux-${JULIA_ARCH}.tar.gz" -O /tmp/julia.tar.gz && \
+      tar -xzf /tmp/julia.tar.gz -C /opt && \
+      ln -s /opt/julia-${JULIA_VERSION}/bin/julia /usr/local/bin/julia && \
+      rm /tmp/julia.tar.gz ; \
+    fi
+
+# ── ScienceClaw ──────────────────────────────────────────────────────
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml* ./
+RUN corepack enable && pnpm install --frozen-lockfile 2>/dev/null || pnpm install
+
+COPY SCIENCE.md openclaw.config.json ./
+COPY skills/ ./skills/
+COPY scienceclaw scripts/ ./scripts/
+COPY docker/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x scienceclaw /app/entrypoint.sh
+
+# Workspace for persistent outputs
+RUN mkdir -p /root/.scienceclaw/workspace/projects /root/.scienceclaw/workspace/quick /root/.scienceclaw/memory
+
+EXPOSE 18789
+
+HEALTHCHECK --interval=60s --timeout=10s --start-period=45s --retries=3 \
+  CMD node -e "const h=require('http');h.get('http://127.0.0.1:18789/health',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"
+
+ENTRYPOINT ["/app/entrypoint.sh"]
