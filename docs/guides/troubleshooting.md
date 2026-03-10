@@ -105,6 +105,50 @@ If the port is open but TUI can't connect, the auth token may be mismatched. Bot
 
 ## Agent Issues
 
+### HTTP 404: No endpoints found for model
+
+**Symptom:** `HTTP 404: No endpoints found for qwen/qwen-2.5-7b-instruct:free` or similar.
+
+**Cause:** The model has been deprecated, renamed, or removed from the provider (common with OpenRouter free-tier models).
+
+**Fix:**
+
+1. **Avoid free-tier models** — Models with `:free` suffix on OpenRouter are unstable and frequently removed. Use paid models or a direct API instead.
+2. **Switch to a reliable provider:**
+   ```bash
+   # Option 1: DeepSeek (recommended for China, very affordable)
+   # Edit .env:
+   DEEPSEEK_API_KEY=sk-your-deepseek-key
+   DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
+
+   # Option 2: Use yunwu.ai relay
+   OPENAI_API_KEY=sk-your-relay-key
+   OPENAI_BASE_URL=https://yunwu.ai/v1
+   ```
+3. **Restart after changes:**
+   ```bash
+   ./scienceclaw stop && ./scienceclaw run
+   ```
+
+### HTTP 403: This model is not available in your region
+
+**Symptom:** `HTTP 403: This model is not available in your region.`
+
+**Cause:** The model provider restricts access based on geography. Common with OpenRouter for users in China.
+
+**Fix:**
+
+1. **Use DeepSeek** — No region restrictions, direct API access from China:
+   ```bash
+   DEEPSEEK_API_KEY=sk-your-key
+   DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
+   ```
+2. **Use a relay service** — yunwu.ai acts as a proxy and bypasses regional blocks:
+   ```bash
+   OPENAI_BASE_URL=https://yunwu.ai/v1
+   ```
+3. **Run `./scienceclaw doctor`** to verify which providers are reachable from your network.
+
 ### Agent Not Responding
 
 **Symptom:** You send a message but get no response, or the agent takes extremely long.
@@ -112,7 +156,13 @@ If the port is open but TUI can't connect, the auth token may be mismatched. Bot
 **Check API key validity:**
 
 ```bash
-# Test your API key directly
+# Run the built-in diagnostics
+./scienceclaw doctor
+```
+
+Or test manually:
+
+```bash
 source .env
 curl -s "$OPENAI_BASE_URL/models" \
   -H "Authorization: Bearer $OPENAI_API_KEY" | head -20
@@ -128,8 +178,9 @@ Verify the model ID in `openclaw.config.json` matches what your provider offers.
 
 - Regenerate your API key from the provider dashboard
 - Check your account balance/credits
-- Try a different model (e.g., switch from `claude-opus-4-6` to `gpt-4o`)
+- Try a different model (e.g., switch from `claude-opus-4-6` to `deepseek-chat`)
 - Check if the relay service (yunwu.ai, openrouter) is operational
+- Run `./scienceclaw doctor` for automated diagnostics
 
 ### Agent Returns Errors About Tools
 
@@ -318,14 +369,14 @@ Subsequent queries are faster.
 ## Diagnostic Commands
 
 ```bash
+# Full diagnostics (system, API, gateway, channels)
+./scienceclaw doctor
+
 # Check gateway status
 ./scienceclaw status
 
 # View gateway log
-cat /tmp/scienceclaw-gateway.log
-
-# View recent gateway log
-tail -50 /tmp/scienceclaw-gateway.log
+tail -50 ~/.scienceclaw/gateway.log
 
 # Check Node.js version
 node -v

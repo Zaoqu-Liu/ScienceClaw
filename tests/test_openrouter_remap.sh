@@ -64,8 +64,8 @@ echo ""
 echo "  $(_bold '═══ OpenRouter Remap E2E Test Suite ═══')"
 echo ""
 
-# ── TEST 1: OpenRouter full (all 3 providers) ────────────────────────
-echo "  $(_cyan 'TEST 1: OpenRouter — all 3 providers point to openrouter.ai')"
+# ── TEST 1: OpenRouter full (all 4 providers) ────────────────────────
+echo "  $(_cyan 'TEST 1: OpenRouter — all 4 providers point to openrouter.ai')"
 
 export OPENAI_API_KEY="sk-or-test-key"
 export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
@@ -73,6 +73,8 @@ export CLAUDE_API_KEY="sk-or-test-key"
 export CLAUDE_BASE_URL="https://openrouter.ai/api/v1"
 export GEMINI_API_KEY="sk-or-test-key"
 export GEMINI_BASE_URL="https://openrouter.ai/api/v1"
+export DEEPSEEK_API_KEY="sk-or-test-key"
+export DEEPSEEK_BASE_URL="https://openrouter.ai/api/v1"
 export GATEWAY_AUTH_TOKEN="test-token"
 
 _build_runtime_config 2>/dev/null
@@ -103,17 +105,25 @@ assert_json_eq "gemini model[1] → google/gemini-2.5-pro" \
   "models.providers.gemini.models.1.id" \
   "google/gemini-2.5-pro" "$T1"
 
+assert_json_eq "deepseek model[0] → deepseek/deepseek-chat" \
+  "models.providers.deepseek.models.0.id" \
+  "deepseek/deepseek-chat" "$T1"
+
 # Agent model references (critical fix!)
 assert_json_eq "primary → claude/anthropic/claude-sonnet-4.6" \
   "agents.defaults.model.primary" \
   "claude/anthropic/claude-sonnet-4.6" "$T1"
 
-assert_json_eq "fallback[0] → gemini/google/gemini-2.5-pro" \
+assert_json_eq "fallback[0] → deepseek/deepseek/deepseek-chat" \
   "agents.defaults.model.fallbacks.0" \
+  "deepseek/deepseek/deepseek-chat" "$T1"
+
+assert_json_eq "fallback[1] → gemini/google/gemini-2.5-pro" \
+  "agents.defaults.model.fallbacks.1" \
   "gemini/google/gemini-2.5-pro" "$T1"
 
-assert_json_eq "fallback[1] → openai/openai/gpt-4o" \
-  "agents.defaults.model.fallbacks.1" \
+assert_json_eq "fallback[2] → openai/openai/gpt-4o" \
+  "agents.defaults.model.fallbacks.2" \
   "openai/openai/gpt-4o" "$T1"
 
 # Tools media
@@ -138,6 +148,8 @@ echo "  $(_cyan 'TEST 2: yunwu.ai — no remapping should occur')"
 export OPENAI_BASE_URL="https://yunwu.ai/v1"
 export CLAUDE_BASE_URL="https://yunwu.ai/v1"
 export GEMINI_BASE_URL="https://yunwu.ai/v1"
+export DEEPSEEK_API_KEY="sk-or-test-key"
+export DEEPSEEK_BASE_URL="https://yunwu.ai/v1"
 
 _build_runtime_config 2>/dev/null
 T2=$(cat "$RUNTIME_CONFIG")
@@ -158,8 +170,12 @@ assert_json_eq "primary stays claude/claude-sonnet-4-6" \
   "agents.defaults.model.primary" \
   "claude/claude-sonnet-4-6" "$T2"
 
-assert_json_eq "fallback[0] stays gemini/gemini-2.5-pro" \
+assert_json_eq "fallback[0] is deepseek/deepseek-chat" \
   "agents.defaults.model.fallbacks.0" \
+  "deepseek/deepseek-chat" "$T2"
+
+assert_json_eq "fallback[1] stays gemini/gemini-2.5-pro" \
+  "agents.defaults.model.fallbacks.1" \
   "gemini/gemini-2.5-pro" "$T2"
 
 assert_json_eq "audio model stays whisper-1" \
@@ -168,12 +184,14 @@ assert_json_eq "audio model stays whisper-1" \
 
 echo ""
 
-# ── TEST 3: Mixed (Claude=OpenRouter, OpenAI=yunwu, Gemini=direct) ───
+# ── TEST 3: Mixed (Claude=OpenRouter, OpenAI=yunwu, Gemini=direct, DeepSeek=direct) ───
 echo "  $(_cyan 'TEST 3: Mixed providers — only OpenRouter providers get remapped')"
 
 export OPENAI_BASE_URL="https://yunwu.ai/v1"
 export CLAUDE_BASE_URL="https://openrouter.ai/api/v1"
 export GEMINI_BASE_URL="https://generativelanguage.googleapis.com/v1beta"
+export DEEPSEEK_API_KEY="sk-or-test-key"
+export DEEPSEEK_BASE_URL="https://api.deepseek.com/v1"
 
 _build_runtime_config 2>/dev/null
 T3=$(cat "$RUNTIME_CONFIG")
@@ -190,16 +208,24 @@ assert_json_eq "gemini model[0] stays gemini-2.5-flash (direct)" \
   "models.providers.gemini.models.0.id" \
   "gemini-2.5-flash" "$T3"
 
+assert_json_eq "deepseek model[0] stays deepseek-chat (direct)" \
+  "models.providers.deepseek.models.0.id" \
+  "deepseek-chat" "$T3"
+
 assert_json_eq "primary remapped (claude is OpenRouter)" \
   "agents.defaults.model.primary" \
   "claude/anthropic/claude-sonnet-4.6" "$T3"
 
-assert_json_eq "fallback[0] stays (gemini not on OpenRouter)" \
+assert_json_eq "fallback[0] is deepseek (not on OpenRouter)" \
   "agents.defaults.model.fallbacks.0" \
+  "deepseek/deepseek-chat" "$T3"
+
+assert_json_eq "fallback[1] stays (gemini not on OpenRouter)" \
+  "agents.defaults.model.fallbacks.1" \
   "gemini/gemini-2.5-pro" "$T3"
 
-assert_json_eq "fallback[1] stays (openai not on OpenRouter)" \
-  "agents.defaults.model.fallbacks.1" \
+assert_json_eq "fallback[2] stays (openai not on OpenRouter)" \
+  "agents.defaults.model.fallbacks.2" \
   "openai/gpt-4o" "$T3"
 
 assert_json_eq "audio model stays whisper-1 (yunwu)" \
@@ -214,6 +240,8 @@ echo "  $(_cyan 'TEST 4: Direct API — original endpoints, no remapping')"
 export OPENAI_BASE_URL="https://api.openai.com/v1"
 export CLAUDE_BASE_URL="https://api.anthropic.com/v1"
 export GEMINI_BASE_URL="https://generativelanguage.googleapis.com/v1beta"
+export DEEPSEEK_API_KEY="sk-or-test-key"
+export DEEPSEEK_BASE_URL="https://api.deepseek.com/v1"
 
 _build_runtime_config 2>/dev/null
 T4=$(cat "$RUNTIME_CONFIG")
@@ -234,8 +262,12 @@ assert_json_eq "primary stays claude/claude-sonnet-4-6" \
   "agents.defaults.model.primary" \
   "claude/claude-sonnet-4-6" "$T4"
 
-assert_json_eq "all fallbacks unchanged" \
-  "agents.defaults.model.fallbacks.1" \
+assert_json_eq "fallback[0] is deepseek" \
+  "agents.defaults.model.fallbacks.0" \
+  "deepseek/deepseek-chat" "$T4"
+
+assert_json_eq "fallback[2] is openai" \
+  "agents.defaults.model.fallbacks.2" \
   "openai/gpt-4o" "$T4"
 
 echo ""
@@ -246,6 +278,8 @@ echo "  $(_cyan 'TEST 5: Idempotency — running remap twice should not double-p
 export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
 export CLAUDE_BASE_URL="https://openrouter.ai/api/v1"
 export GEMINI_BASE_URL="https://openrouter.ai/api/v1"
+export DEEPSEEK_API_KEY="sk-or-test-key"
+export DEEPSEEK_BASE_URL="https://openrouter.ai/api/v1"
 
 _build_runtime_config 2>/dev/null
 first_pass=$(cat "$RUNTIME_CONFIG")
@@ -273,6 +307,8 @@ echo "  $(_cyan 'TEST 6: JSON structural integrity after remap')"
 export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
 export CLAUDE_BASE_URL="https://openrouter.ai/api/v1"
 export GEMINI_BASE_URL="https://openrouter.ai/api/v1"
+export DEEPSEEK_API_KEY="sk-deepseek-test-key"
+export DEEPSEEK_BASE_URL="https://openrouter.ai/api/v1"
 
 _build_runtime_config 2>/dev/null
 
@@ -290,12 +326,12 @@ PROVIDERS_COUNT=$(node -e "
   const c = JSON.parse(require('fs').readFileSync('$RUNTIME_CONFIG','utf8'));
   console.log(Object.keys(c.models.providers).length);
 " 2>/dev/null)
-if [ "$PROVIDERS_COUNT" = "3" ]; then
+if [ "$PROVIDERS_COUNT" = "4" ]; then
   PASS=$((PASS + 1))
-  printf "    ✅ All 3 providers preserved\n"
+  printf "    ✅ All 4 providers preserved\n"
 else
   FAIL=$((FAIL + 1))
-  printf "    ❌ Expected 3 providers, got %s\n" "$PROVIDERS_COUNT"
+  printf "    ❌ Expected 4 providers, got %s\n" "$PROVIDERS_COUNT"
 fi
 
 TOTAL=$((TOTAL + 1))
@@ -327,6 +363,66 @@ fi
 
 echo ""
 
+# ── TEST 7: DeepSeek provider and OpenRouter remap ───────────────────
+echo "  $(_cyan 'TEST 7: DeepSeek provider — OpenRouter remap')"
+
+export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
+export CLAUDE_BASE_URL="https://openrouter.ai/api/v1"
+export GEMINI_BASE_URL="https://openrouter.ai/api/v1"
+export DEEPSEEK_API_KEY="sk-deepseek-test-key"
+export DEEPSEEK_BASE_URL="https://openrouter.ai/api/v1"
+
+_build_runtime_config 2>/dev/null
+T7=$(cat "$RUNTIME_CONFIG")
+
+assert_json_eq "deepseek model[0] → deepseek/deepseek-chat" \
+  "models.providers.deepseek.models.0.id" \
+  "deepseek/deepseek-chat" "$T7"
+
+assert_json_eq "deepseek model[1] → deepseek/deepseek-r1" \
+  "models.providers.deepseek.models.1.id" \
+  "deepseek/deepseek-r1" "$T7"
+
+assert_json_eq "fallback includes deepseek" \
+  "agents.defaults.model.fallbacks.0" \
+  "deepseek/deepseek/deepseek-chat" "$T7"
+
+echo ""
+
+# ── TEST 8: Auto-prune unconfigured providers ────────────────────────
+echo "  $(_cyan 'TEST 8: Auto-prune — only configured providers survive')"
+
+export OPENAI_API_KEY="sk-your-key"
+export OPENAI_BASE_URL="https://api.openai.com/v1"
+export CLAUDE_API_KEY="sk-your-key"
+export CLAUDE_BASE_URL="https://api.anthropic.com/v1"
+export GEMINI_API_KEY="your-key"
+export GEMINI_BASE_URL="https://generativelanguage.googleapis.com/v1beta"
+export DEEPSEEK_API_KEY="sk-real-deepseek-key-here"
+export DEEPSEEK_BASE_URL="https://api.deepseek.com/v1"
+
+_build_runtime_config 2>/dev/null
+T8=$(cat "$RUNTIME_CONFIG")
+
+TOTAL=$((TOTAL + 1))
+PRUNED_COUNT=$(node -e "
+  const c = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+  console.log(Object.keys(c.models.providers).length);
+" <<< "$T8" 2>/dev/null)
+if [ "$PRUNED_COUNT" = "1" ]; then
+  PASS=$((PASS + 1))
+  printf "    ✅ Only DeepSeek survived (placeholder keys pruned)\n"
+else
+  FAIL=$((FAIL + 1))
+  printf "    ❌ Expected 1 provider after prune, got %s\n" "$PRUNED_COUNT"
+fi
+
+assert_json_eq "primary auto-switched to deepseek" \
+  "agents.defaults.model.primary" \
+  "deepseek/deepseek-chat" "$T8"
+
+echo ""
+
 # ═══════════════════════════════════════════════════════════════════════
 # Summary
 echo "  $(_bold '═══ Results ═══')"
@@ -340,6 +436,6 @@ echo ""
 
 # Cleanup
 unset OPENAI_API_KEY OPENAI_BASE_URL CLAUDE_API_KEY CLAUDE_BASE_URL
-unset GEMINI_API_KEY GEMINI_BASE_URL GATEWAY_AUTH_TOKEN
+unset GEMINI_API_KEY GEMINI_BASE_URL DEEPSEEK_API_KEY DEEPSEEK_BASE_URL GATEWAY_AUTH_TOKEN
 
 exit "$FAIL"

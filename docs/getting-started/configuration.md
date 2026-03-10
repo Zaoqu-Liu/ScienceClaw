@@ -10,7 +10,7 @@ This file holds API keys and runtime settings. It is sourced automatically when 
 
 ### LLM Provider Keys
 
-You need at least one provider configured. All three use the OpenAI-compatible API format.
+You need at least one provider configured. All providers use the OpenAI-compatible API format.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
@@ -20,8 +20,17 @@ You need at least one provider configured. All three use the OpenAI-compatible A
 | `CLAUDE_BASE_URL` | API endpoint for Claude | `https://api.anthropic.com/v1` |
 | `GEMINI_API_KEY` | API key for Google Gemini or relay | `AIza...` |
 | `GEMINI_BASE_URL` | API endpoint for Gemini | `https://generativelanguage.googleapis.com/v1beta` |
+| `DEEPSEEK_API_KEY` | API key for DeepSeek | `sk-...` |
+| `DEEPSEEK_BASE_URL` | API endpoint for DeepSeek | `https://api.deepseek.com/v1` |
 
-When using a relay service like yunwu.ai, all three `*_BASE_URL` values point to the same endpoint and you can use a single key:
+**DeepSeek (recommended for China):** Direct API access, no proxy needed, very affordable.
+
+```bash
+DEEPSEEK_API_KEY=sk-your-deepseek-key
+DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
+```
+
+**Relay service (yunwu.ai):** A single key accesses all providers through one endpoint.
 
 ```bash
 OPENAI_API_KEY=sk-your-relay-key
@@ -31,6 +40,8 @@ CLAUDE_BASE_URL=https://yunwu.ai/v1
 GEMINI_API_KEY=sk-your-relay-key
 GEMINI_BASE_URL=https://yunwu.ai/v1
 ```
+
+> **Tip:** Providers without valid API keys are automatically pruned at startup. Only configure the ones you actually have keys for.
 
 ### Optional Service Keys
 
@@ -214,6 +225,14 @@ Available models (`provider/model-id`):
 | `openai/o4-mini` | Fast reasoning model |
 | `gemini/gemini-2.5-pro` | Strong reasoning, large context |
 | `gemini/gemini-2.5-flash` | Fastest and cheapest option |
+| `deepseek/deepseek-chat` | DeepSeek V3 — affordable, no region restrictions |
+| `deepseek/deepseek-reasoner` | DeepSeek R1 — strong reasoning, affordable |
+
+**Check model availability:**
+
+```bash
+./scienceclaw models    # Tests each model and shows which ones work
+```
 
 Restart the gateway after changing models:
 
