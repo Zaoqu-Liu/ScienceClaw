@@ -153,9 +153,10 @@ _prune_unconfigured_providers() {
     const c = JSON.parse(process.argv[1]);
     const providers = (c.models || {}).providers || {};
     const removed = [];
+    const PLACEHOLDER_RE = /your[-_]?(key|token|api|relay|openai|claude|gemini|deepseek)|^sk-your|^sk-ant-your|^sk-or-your|example|placeholder|change[-_]?me|xxx|test[-_]?key/i;
     for (const [key, prov] of Object.entries(providers)) {
       const k = prov.apiKey || "";
-      if (!k || k.includes("your-key") || k.includes("your-") || k.length < 8) {
+      if (!k || PLACEHOLDER_RE.test(k) || k.length < 10) {
         removed.push(key);
         delete providers[key];
       }
@@ -408,6 +409,106 @@ _ensure_watchdog() {
 
 # ── High-level commands ───────────────────────────────────────────────
 
+_validate_api_key() {
+  [ -f "$RUNTIME_CONFIG" ] || return 0
+
+  local result
+  result=$(node -e '
+    const fs = require("fs"), https = require("https"), http = require("http");
+    const c = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+    const providers = (c.models || {}).providers || {};
+    const keys = Object.entries(providers);
+    if (keys.length === 0) { console.log("no_provider"); process.exit(0); }
+
+    let tested = 0;
+    let passed = 0;
+    let remaining = keys.length;
+
+    function done() {
+      if (--remaining > 0) return;
+      if (passed > 0) console.log("ok:" + passed + "/" + tested);
+      else console.log("all_fail:" + tested);
+    }
+
+    for (const [name, prov] of keys) {
+      if (!prov.apiKey || !prov.baseUrl) { done(); continue; }
+      tested++;
+      const url = new URL(prov.baseUrl.replace(/\/+$/, "") + "/models");
+      const mod = url.protocol === "https:" ? https : http;
+      const req = mod.request(url, {
+        headers: { "Authorization": "Bearer " + prov.apiKey },
+        timeout: 8000,
+      }, (res) => {
+        let d = "";
+        res.on("data", c => d += c);
+        res.on("end", () => {
+          if (res.statusCode === 200 || res.statusCode === 301 || res.statusCode === 302) passed++;
+          done();
+        });
+      });
+      req.on("error", () => done());
+      req.on("timeout", () => { req.destroy(); done(); });
+      req.end();
+    }
+  ' "$RUNTIME_CONFIG" 2>/dev/null) || result="skip"
+
+  case "$result" in
+    ok:*) return 0 ;;
+    skip) return 0 ;;
+    no_provider)
+      echo ""
+      if [ "${SCIENCECLAW_LANG:-zh}" = "zh" ]; then
+        echo "  ❌ 没有找到有效的 API Key"
+        echo ""
+        echo "  请先配置至少一个 LLM 服务商的 API Key："
+        echo "    1. 运行 ./scienceclaw setup    （交互式配置）"
+        echo "    2. 或者编辑 .env 文件手动填写"
+        echo ""
+        echo "  推荐: DeepSeek（国内直连，无需代理，很便宜）"
+        echo "    注册: https://platform.deepseek.com/"
+      else
+        echo "  ❌ No valid API key found"
+        echo ""
+        echo "  Configure at least one LLM provider API key:"
+        echo "    1. Run ./scienceclaw setup    (interactive)"
+        echo "    2. Or edit .env manually"
+        echo ""
+        echo "  Recommended: DeepSeek (direct access from China, very affordable)"
+        echo "    Sign up: https://platform.deepseek.com/"
+      fi
+      echo ""
+      return 1
+      ;;
+    all_fail:*)
+      echo ""
+      if [ "${SCIENCECLAW_LANG:-zh}" = "zh" ]; then
+        echo "  ❌ 所有已配置的 API Key 都无法连通"
+        echo ""
+        echo "  可能原因:"
+        echo "    • API Key 已过期或无效"
+        echo "    • 网络无法访问 API 服务（国内用户需要代理或使用 DeepSeek/yunwu.ai）"
+        echo "    • Base URL 配置错误"
+        echo ""
+        echo "  诊断: ./scienceclaw doctor"
+        echo "  重新配置: ./scienceclaw setup"
+      else
+        echo "  ❌ All configured API keys failed validation"
+        echo ""
+        echo "  Possible causes:"
+        echo "    • API key expired or invalid"
+        echo "    • Network cannot reach API endpoint (China users: try DeepSeek or yunwu.ai)"
+        echo "    • Base URL misconfigured"
+        echo ""
+        echo "  Diagnose: ./scienceclaw doctor"
+        echo "  Reconfigure: ./scienceclaw setup"
+      fi
+      echo ""
+      return 1
+      ;;
+  esac
+  return 0
+}
+
 ensure_gateway() {
   _require_engine
   if is_gateway_running; then
@@ -416,6 +517,7 @@ ensure_gateway() {
   fi
   _build_runtime_config || return 1
   _check_security || return 1
+  _validate_api_key || return 1
   _msg gw_starting
   _start_gateway_process > /dev/null
   if wait_for_gateway; then
