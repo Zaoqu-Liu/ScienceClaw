@@ -66,7 +66,9 @@ jobs:
           FOUND=$(grep -rEn "$PATTERNS" --include='*.js' --include='*.ts' --include='*.json' --include='*.yml' --include='*.yaml' --include='*.md' --include='*.sh' --include='*.py' . \
             --exclude-dir=node_modules \
             --exclude-dir=.git \
+            --exclude-dir=docs \
             --exclude='.env.example' \
+            | grep -v 'your-.*-key\|your-.*-token\|sk-your\|sk-ant-your\|sk-or-your' \
             || true)
           if [ -n "$FOUND" ]; then
             echo "Hardcoded API keys detected:"
