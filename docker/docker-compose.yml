@@ -1,4 +1,29 @@
 services:
+  # ── All-in-One (recommended) ────────────────────────────────────────
+  # Single container with Node + Python + R + Julia + ScienceClaw.
+  # Usage:
+  #   docker-compose -f docker/docker-compose.yml up scienceclaw
+  #
+  scienceclaw:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.allinone
+    ports:
+      - "18789:18789"
+    env_file:
+      - ../.env
+    volumes:
+      - ../SCIENCE.md:/app/SCIENCE.md:ro
+      - ../openclaw.config.json:/app/openclaw.config.json:ro
+      - ../skills:/app/skills:ro
+      - scienceclaw-workspace:/root/.scienceclaw/workspace
+    restart: always
+
+  # ── Split mode (gateway + sandbox) ──────────────────────────────────
+  # For production: gateway handles LLM, sandbox runs code in isolation.
+  # Usage:
+  #   docker-compose -f docker/docker-compose.yml --profile split up
+  #
   gateway:
     build:
       context: ..
@@ -15,6 +40,8 @@ services:
     depends_on:
       - sandbox
     restart: always
+    profiles:
+      - split
 
   sandbox:
     build:
@@ -28,6 +55,8 @@ services:
           memory: 4g
           cpus: "2"
     network_mode: none
+    profiles:
+      - split
 
 volumes:
   scienceclaw-workspace:

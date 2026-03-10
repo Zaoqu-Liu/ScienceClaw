@@ -29,6 +29,13 @@ GW_WATCHDOG_PID_FILE="$RUNTIME_DIR/watchdog.pid"
 GW_WATCHDOG_INTERVAL="${SCIENCECLAW_WATCHDOG_INTERVAL:-30}"
 GW_LOG_MAX_BYTES="${SCIENCECLAW_LOG_MAX_BYTES:-10485760}"  # 10 MB
 CHANNEL_SCRIPT="$ROOT/scripts/channel.mjs"
+WORKSPACE="$RUNTIME_DIR/workspace"
+PROJECTS_DIR="$WORKSPACE/projects"
+ACTIVE_PROJECT_FILE="$RUNTIME_DIR/active-project"
+
+# Source i18n using a path that survives being sourced from temp dirs in tests
+_I18N="${SCIENCECLAW_ROOT:-$ROOT}/scripts/i18n.sh"
+[ -f "$_I18N" ] && source "$_I18N" || true
 
 # ── Config builder ────────────────────────────────────────────────────
 
@@ -50,8 +57,6 @@ _remap_for_openrouter() {
       "claude-opus-4-6":   "claude-opus-4.6",
     };
 
-    // ── 1. Remap provider model IDs, build ref lookup ────────────────
-    // refMap: "claude/claude-sonnet-4-6" → "claude/anthropic/claude-sonnet-4.6"
     const refMap = {};
 
     for (const [key, prov] of Object.entries(providers)) {
@@ -59,7 +64,7 @@ _remap_for_openrouter() {
       const prefix = PROVIDER_PREFIX[key] || key;
       for (const m of (prov.models || [])) {
         const oldId = m.id;
-        if (oldId.includes("/")) continue;          // already in provider/model format
+        if (oldId.includes("/")) continue;
         const canonical = ID_ALIAS[oldId] || oldId;
         const newId = prefix + "/" + canonical;
         refMap[key + "/" + oldId] = key + "/" + newId;
@@ -67,7 +72,6 @@ _remap_for_openrouter() {
       }
     }
 
-    // ── 2. Remap agent model references ──────────────────────────────
     function remapRef(ref) {
       return ref && refMap[ref] || ref;
     }
@@ -84,7 +88,6 @@ _remap_for_openrouter() {
       if (Array.isArray(am.fallbacks)) am.fallbacks = am.fallbacks.map(remapRef);
     }
 
-    // ── 3. Remap tools.media models ──────────────────────────────────
     const media = (c.tools || {}).media || {};
     for (const section of Object.values(media)) {
       for (const m of (section.models || [])) {
@@ -99,14 +102,14 @@ _remap_for_openrouter() {
   ' "$json" 2>/dev/null) || { printf '%s' "$json"; return 0; }
 
   if [ "$remapped" != "$json" ]; then
-    echo "  🔄 Detected OpenRouter — model IDs remapped automatically" >&2
+    echo "  🔄 OpenRouter detected — model IDs remapped" >&2
   fi
   printf '%s' "$remapped"
 }
 
 _build_runtime_config() {
   local tpl="$ROOT/openclaw.config.json"
-  [ -f "$tpl" ] || { echo "  ❌ openclaw.config.json not found" >&2; return 1; }
+  [ -f "$tpl" ] || { _msg config_missing >&2; return 1; }
   mkdir -p "$RUNTIME_DIR"
 
   local content
@@ -131,8 +134,6 @@ _build_runtime_config() {
     " "$content" 2>/dev/null)
     if [ -n "$injected" ]; then
       content="$injected"
-    else
-      echo "  ⚠️  Failed to inject TELEGRAM_PROXY into config" >&2
     fi
   fi
 
@@ -160,8 +161,7 @@ _require_engine() {
   if [ -z "${OPENCLAW:-}" ]; then
     OPENCLAW="$(_find_openclaw)" || {
       echo ""
-      echo "  OpenClaw engine not found. Run:"
-      echo "    cd $ROOT && bash scripts/setup.sh"
+      _msg engine_missing
       echo ""
       exit 1
     }
@@ -226,9 +226,56 @@ _start_gateway_process() {
   echo "$pid"
 }
 
+# ── Security checks ──────────────────────────────────────────────────
+
+_check_security() {
+  local token="${GATEWAY_AUTH_TOKEN:-change-me-before-production}"
+  local has_external_channels=false
+
+  if [ -f "$RUNTIME_CONFIG" ]; then
+    local channels
+    channels=$(node -e '
+      const c = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+      const ch = c.channels || {};
+      const active = Object.keys(ch).filter(k => ch[k].enabled !== false);
+      console.log(active.join(","));
+    ' "$RUNTIME_CONFIG" 2>/dev/null) || channels=""
+    [ -n "$channels" ] && has_external_channels=true
+  fi
+
+  if [ "$token" = "change-me-before-production" ] || [ -z "$token" ]; then
+    if $has_external_channels; then
+      _msg sec_token_block
+      _msg sec_token_block_h
+      return 1
+    else
+      _msg sec_default_token
+      _msg sec_token_hint
+    fi
+  fi
+
+  if $has_external_channels; then
+    if [ -f "$RUNTIME_CONFIG" ]; then
+      local open_channels
+      open_channels=$(node -e '
+        const c = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+        const ch = c.channels || {};
+        const open = Object.entries(ch)
+          .filter(([,v]) => v.enabled !== false && JSON.stringify(v.allowFrom || []).includes("*"))
+          .map(([k]) => k);
+        if (open.length) console.log(open.join(", "));
+      ' "$RUNTIME_CONFIG" 2>/dev/null) || open_channels=""
+      if [ -n "$open_channels" ]; then
+        _msg sec_open_access "$open_channels"
+        _msg sec_open_hint
+      fi
+    fi
+  fi
+
+  return 0
+}
+
 # ── Watchdog ──────────────────────────────────────────────────────────
-# Runs as a background process. Must NEVER exit on transient failures.
-# Uses its own error handling instead of set -e.
 
 _run_watchdog() {
   trap '' HUP
@@ -237,7 +284,6 @@ _run_watchdog() {
 
   while true; do
     sleep "$GW_WATCHDOG_INTERVAL"
-
     _rotate_log
 
     if ! is_gateway_running 2>/dev/null; then
@@ -304,19 +350,20 @@ ensure_gateway() {
     return 0
   fi
   _build_runtime_config || return 1
-  echo "  🚀 Starting Gateway on port $GW_PORT ..."
+  _check_security || return 1
+  _msg gw_starting
   _start_gateway_process > /dev/null
   if wait_for_gateway; then
     local pid
     pid=$(cat "$GW_PID_FILE" 2>/dev/null)
-    echo "  ✅ Gateway ready (PID ${pid:-?})"
+    _msg gw_ready
     _ensure_watchdog
-    echo "  🛡️  Watchdog active (checks every ${GW_WATCHDOG_INTERVAL}s, auto-restarts on crash)"
+    _msg wd_active
     return 0
   else
-    echo "  ❌ Gateway failed to start."
-    echo "     Log: $GW_LOG"
-    echo "     Tail:"
+    _msg gw_failed
+    _msg gw_failed_log
+    _msg gw_failed_tail
     tail -10 "$GW_LOG" 2>/dev/null | sed 's/^/     /'
     return 1
   fi
@@ -333,7 +380,7 @@ stop_gateway() {
       kill "$pid" 2>/dev/null
       sleep 1
       kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
-      echo "  ✅ Gateway stopped (PID $pid)"
+      _msg gw_stopped
       stopped=true
     fi
     rm -f "$GW_PID_FILE"
@@ -345,82 +392,562 @@ stop_gateway() {
     if [ -n "$pid" ]; then
       kill "$pid" 2>/dev/null; sleep 1
       kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
-      echo "  ✅ Gateway stopped (PID $pid)"
+      _msg gw_stopped
       stopped=true
     fi
   fi
 
-  $stopped || echo "  ⬜ No gateway running"
+  $stopped || _msg gw_not_running
+}
+
+_get_model_name() {
+  if [ -f "$RUNTIME_CONFIG" ]; then
+    node -e '
+      const c = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+      const m = ((c.agents || {}).defaults || {}).model || {};
+      const p = m.primary || "unknown";
+      const parts = p.split("/");
+      console.log(parts[parts.length - 1]);
+    ' "$RUNTIME_CONFIG" 2>/dev/null || echo "unknown"
+  else
+    echo "unknown"
+  fi
+}
+
+_get_active_channels() {
+  if [ -f "$RUNTIME_CONFIG" ]; then
+    node -e '
+      const c = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+      const ch = c.channels || {};
+      const active = Object.keys(ch).filter(k => ch[k].enabled !== false);
+      console.log(active.length ? active.join(", ") : "");
+    ' "$RUNTIME_CONFIG" 2>/dev/null || echo ""
+  else
+    echo ""
+  fi
+}
+
+_get_active_project() {
+  if [ -f "$ACTIVE_PROJECT_FILE" ]; then
+    cat "$ACTIVE_PROJECT_FILE" 2>/dev/null
+  else
+    echo ""
+  fi
 }
 
 show_status() {
   echo ""
   if is_gateway_running; then
-    local gw_pid
-    gw_pid=$(_find_gateway_pid)
-    echo "  ✅ Gateway running (PID ${gw_pid:-?}, port $GW_PORT)"
+    _msg status_running
+    _msg status_model "$(_get_model_name)"
+    local channels
+    channels=$(_get_active_channels)
+    if [ -n "$channels" ]; then
+      _msg status_channels "$channels"
+    fi
+    local project
+    project=$(_get_active_project)
+    if [ -n "$project" ]; then
+      _msg status_project "$project"
+    fi
   else
-    echo "  ⬜ Gateway not running"
+    _msg status_stopped
   fi
 
   if _is_watchdog_alive; then
-    echo "  🛡️  Watchdog active"
+    _msg wd_active
   else
-    echo "  ⚠️  Watchdog not running"
+    _msg wd_not_running
   fi
 
-  echo "  📋 Log: $GW_LOG"
-  echo "  📁 Config: $RUNTIME_CONFIG"
-
-  if [ -f "$GW_LOG" ]; then
-    local size
-    size=$(wc -c < "$GW_LOG" 2>/dev/null | tr -d ' ')
-    local size_mb=$(( ${size:-0} / 1048576 ))
-    echo "  📊 Log size: ${size_mb}MB / $((GW_LOG_MAX_BYTES / 1048576))MB"
-  fi
+  _msg status_log
   echo ""
 }
 
 show_help() {
   echo ""
-  echo "  ScienceClaw — Your AI Research Colleague"
+  _msg help_title
   echo ""
-  echo "  Usage: ./scienceclaw <command>"
+  _msg help_usage
   echo ""
-  echo "  Getting started:"
-  echo "    setup               Interactive setup wizard"
-  echo "    run                 Start gateway + open TUI"
-  echo "    stop                Stop gateway + watchdog"
-  echo "    restart             Restart gateway (rebuild config)"
-  echo "    status              Check gateway + watchdog status"
+  _msg help_start
+  _msg help_run
+  _msg help_run2
+  _msg help_stop
+  _msg help_restart
+  _msg help_status
   echo ""
-  echo "  Channels:"
-  echo "    add <channel>       Add a messaging channel"
-  echo "    remove <channel>    Remove a channel"
-  echo "    channels            List configured channels"
+  _msg help_ch
+  _msg help_add
+  _msg help_remove
+  _msg help_channels
   echo ""
-  echo "  Advanced:"
-  echo "    tui                 Open TUI (auto-starts gateway)"
-  echo "    dashboard           Open web dashboard"
-  echo "    start               Start gateway in foreground (no watchdog)"
-  echo "    ask \"query\"          One-shot query"
-  echo "    logs                Tail gateway logs"
+  _msg help_proj
+  _msg help_proj_new
+  _msg help_proj_list
+  _msg help_proj_open
   echo ""
-  echo "  Supported channels:"
-  echo "    telegram  discord  slack  whatsapp  feishu  matrix  wechat"
+  _msg help_adv
+  _msg help_tui
+  _msg help_dash
+  _msg help_doctor
+  _msg help_skills
+  _msg help_outputs
+  _msg help_logs
+  _msg help_ask
+  echo ""
+  _msg help_supported
+  _msg help_ch_list
   echo ""
 }
 
+# ── Doctor command ────────────────────────────────────────────────────
+
+run_doctor() {
+  echo ""
+  _msg doc_title
+  echo ""
+
+  _msg doc_section "--- System ---"
+
+  # Node.js
+  if command -v node >/dev/null 2>&1; then
+    local nv
+    nv=$(node -v)
+    local major
+    major=$(echo "$nv" | cut -d. -f1 | tr -d 'v')
+    if [ "$major" -ge 22 ]; then
+      _msg doc_ok "Node.js $nv"
+    else
+      _msg doc_warn "Node.js $nv (>= 22 recommended)"
+    fi
+  else
+    _msg doc_fail "Node.js not found"
+  fi
+
+  # Python
+  if command -v python3 >/dev/null 2>&1; then
+    _msg doc_ok "Python $(python3 --version 2>&1 | cut -d' ' -f2)"
+  else
+    _msg doc_warn "Python 3 not found (needed for code execution)"
+  fi
+
+  # R
+  if command -v Rscript >/dev/null 2>&1; then
+    local rv
+    rv=$(Rscript --version 2>&1 | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+') || rv="unknown"
+    _msg doc_ok "R $rv"
+  else
+    _msg doc_warn "R not found (optional, for stats/visualization skills)"
+  fi
+
+  echo ""
+  _msg doc_section "--- API ---"
+
+  # API key
+  if [ -n "${OPENAI_API_KEY:-}" ] && [ "$OPENAI_API_KEY" != "sk-your-key" ]; then
+    local base_url="${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+    local http_code
+    http_code=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 \
+      -H "Authorization: Bearer $OPENAI_API_KEY" \
+      "${base_url}/models" 2>/dev/null) || http_code="timeout"
+    if [ "$http_code" = "200" ]; then
+      _msg doc_ok "API Key valid ($base_url)"
+    elif [ "$http_code" = "timeout" ] || [ "$http_code" = "000" ]; then
+      _msg doc_warn "API unreachable ($base_url) — check network/proxy"
+    else
+      _msg doc_fail "API Key invalid (HTTP $http_code from $base_url)"
+    fi
+  else
+    _msg doc_fail "No API Key configured — run: ./scienceclaw setup"
+  fi
+
+  # Gateway token
+  local token="${GATEWAY_AUTH_TOKEN:-}"
+  if [ -z "$token" ] || [ "$token" = "change-me-before-production" ]; then
+    _msg doc_warn "Using default gateway token — change for production"
+  else
+    _msg doc_ok "Gateway token configured"
+  fi
+
+  echo ""
+  _msg doc_section "--- Gateway ---"
+
+  if is_gateway_running; then
+    _msg doc_ok "Gateway running (port $GW_PORT)"
+  else
+    _msg doc_warn "Gateway not running"
+  fi
+
+  if _is_watchdog_alive; then
+    _msg doc_ok "Watchdog active"
+  else
+    _msg doc_warn "Watchdog not running"
+  fi
+
+  # Channels
+  echo ""
+  _msg doc_section "--- Channels ---"
+  local channels
+  channels=$(_get_active_channels)
+  if [ -n "$channels" ]; then
+    _msg doc_ok "Active: $channels"
+  else
+    _msg doc_warn "No channels configured"
+  fi
+
+  # Disk
+  echo ""
+  _msg doc_section "--- Workspace ---"
+  if [ -d "$WORKSPACE" ]; then
+    local ws_size
+    ws_size=$(du -sh "$WORKSPACE" 2>/dev/null | cut -f1) || ws_size="?"
+    _msg doc_ok "Workspace: $WORKSPACE ($ws_size)"
+  else
+    _msg doc_warn "Workspace not yet created"
+  fi
+
+  if [ -f "$GW_LOG" ]; then
+    local log_size
+    log_size=$(du -sh "$GW_LOG" 2>/dev/null | cut -f1) || log_size="?"
+    _msg doc_ok "Log: $GW_LOG ($log_size)"
+  fi
+
+  echo ""
+}
+
+# ── Skills command ────────────────────────────────────────────────────
+
+run_skills() {
+  local search_term="${1:-}"
+  local catalog="$ROOT/skills/CATALOG.json"
+
+  echo ""
+  _msg skills_title
+  echo ""
+
+  if [ ! -f "$catalog" ]; then
+    _msg doc_warn "CATALOG.json not found"
+    return
+  fi
+
+  if [ -n "$search_term" ]; then
+    node -e '
+      const catalog = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+      const term = process.argv[2].toLowerCase();
+      const matches = catalog.filter(s =>
+        (s.name || "").toLowerCase().includes(term) ||
+        (s.title || "").toLowerCase().includes(term) ||
+        (s.description || "").toLowerCase().includes(term)
+      );
+      if (!matches.length) {
+        console.log("  (none)");
+        process.exit(0);
+      }
+      for (const s of matches) {
+        console.log(`  ${s.name.padEnd(35)} ${(s.title || "").slice(0, 50)}`);
+      }
+    ' "$catalog" "$search_term"
+  else
+    node -e '
+      const catalog = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+      console.log(`  共 ${catalog.length} 项\n`);
+
+      const domains = {};
+      const domainMap = {
+        "literature": "📚 Literature / 文献",
+        "search": "📚 Literature / 文献",
+        "database": "🗄️  Databases / 数据库",
+        "bioinformatics": "🧬 Bioinformatics / 生信",
+        "genomics": "🧬 Bioinformatics / 生信",
+        "proteomics": "🧬 Bioinformatics / 生信",
+        "single-cell": "🧬 Bioinformatics / 生信",
+        "transcriptomics": "🧬 Bioinformatics / 生信",
+        "visualization": "📊 Visualization / 可视化",
+        "plot": "📊 Visualization / 可视化",
+        "chart": "📊 Visualization / 可视化",
+        "clinical": "🏥 Clinical / 临床",
+        "survival": "🏥 Clinical / 临床",
+        "drug": "💊 Drug Discovery / 药物",
+        "chemistry": "💊 Drug Discovery / 药物",
+        "machine-learning": "🤖 Machine Learning / 机器学习",
+        "statistics": "📐 Statistics / 统计",
+      };
+
+      for (const s of catalog) {
+        let assigned = false;
+        const text = [s.name, s.title, s.description].join(" ").toLowerCase();
+        for (const [kw, domain] of Object.entries(domainMap)) {
+          if (text.includes(kw)) {
+            if (!domains[domain]) domains[domain] = [];
+            domains[domain].push(s.name);
+            assigned = true;
+            break;
+          }
+        }
+        if (!assigned) {
+          const key = "🔬 Other / 其他";
+          if (!domains[key]) domains[key] = [];
+          domains[key].push(s.name);
+        }
+      }
+
+      for (const [domain, skills] of Object.entries(domains).sort((a, b) => b[1].length - a[1].length)) {
+        console.log(`  ${domain} (${skills.length})`);
+        const preview = skills.slice(0, 5).join(", ");
+        const more = skills.length > 5 ? `, ... +${skills.length - 5}` : "";
+        console.log(`    ${preview}${more}`);
+        console.log();
+      }
+    ' "$catalog"
+  fi
+
+  _msg skills_search
+  echo ""
+}
+
+# ── Outputs command ───────────────────────────────────────────────────
+
+run_outputs() {
+  local subcmd="${1:-list}"
+  echo ""
+  _msg out_title
+  echo ""
+
+  case "$subcmd" in
+    open)
+      if [ -d "$PROJECTS_DIR" ]; then
+        if command -v open >/dev/null 2>&1; then
+          open "$PROJECTS_DIR"
+        elif command -v xdg-open >/dev/null 2>&1; then
+          xdg-open "$PROJECTS_DIR"
+        else
+          echo "  $PROJECTS_DIR"
+        fi
+      else
+        _msg out_empty
+      fi
+      ;;
+    clean)
+      local days="${2:-30}"
+      if [ -d "$WORKSPACE/quick" ]; then
+        find "$WORKSPACE/quick" -type f -mtime +"$days" -delete 2>/dev/null
+        find "$WORKSPACE/quick" -type d -empty -delete 2>/dev/null
+      fi
+      _msg out_cleaned "$days"
+      ;;
+    list|*)
+      if [ -d "$PROJECTS_DIR" ] && [ "$(ls -A "$PROJECTS_DIR" 2>/dev/null)" ]; then
+        for dir in "$PROJECTS_DIR"/*/; do
+          [ -d "$dir" ] || continue
+          local name
+          name=$(basename "$dir")
+          local file_count
+          file_count=$(find "$dir" -type f 2>/dev/null | wc -l | tr -d ' ')
+          local date_str=""
+          local last_mod
+          last_mod=$(stat -f "%m" "$dir" 2>/dev/null || stat -c "%Y" "$dir" 2>/dev/null || echo "")
+          if [ -n "$last_mod" ]; then
+            date_str=$(date -r "$last_mod" "+%Y-%m-%d" 2>/dev/null || date -d "@$last_mod" "+%Y-%m-%d" 2>/dev/null || echo "")
+          fi
+          echo "  📁 $name  ($file_count files${date_str:+, $date_str})"
+        done
+      else
+        _msg out_empty
+        _msg out_hint
+      fi
+
+      if [ -d "$WORKSPACE/quick" ] && [ "$(ls -A "$WORKSPACE/quick" 2>/dev/null)" ]; then
+        echo ""
+        echo "  📋 quick/"
+        for dir in "$WORKSPACE/quick"/*/; do
+          [ -d "$dir" ] || continue
+          local name
+          name=$(basename "$dir")
+          local fc
+          fc=$(find "$dir" -type f 2>/dev/null | wc -l | tr -d ' ')
+          echo "     $name ($fc files)"
+        done
+      fi
+      ;;
+  esac
+  echo ""
+}
+
+# ── Project command ───────────────────────────────────────────────────
+
+run_project() {
+  local subcmd="${1:-list}"
+  shift 2>/dev/null || true
+
+  case "$subcmd" in
+    new)
+      local title="$*"
+      if [ -z "$title" ]; then
+        if [ "${SCIENCECLAW_LANG:-zh}" = "zh" ]; then
+          printf "  项目名称: "
+        else
+          printf "  Project name: "
+        fi
+        read title
+      fi
+      if [ -z "$title" ]; then
+        echo "  ❌ Name required"
+        return 1
+      fi
+      local slug
+      slug=$(echo "$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//' | cut -c1-40)
+      local date_str
+      date_str=$(date +%Y-%m-%d)
+      local dir_name="${slug}-${date_str}"
+      local proj_dir="$PROJECTS_DIR/$dir_name"
+
+      mkdir -p "$proj_dir/figures" "$proj_dir/reports" "$proj_dir/data"
+
+      cat > "$proj_dir/README.md" << EOF
+# $title
+
+- Created: $date_str
+- Status: Active
+
+## Files
+
+(auto-updated by ScienceClaw)
+EOF
+
+      echo "$title" > "$ACTIVE_PROJECT_FILE"
+
+      # Write ACTIVE_PROJECT.md to workspace for agent
+      mkdir -p "$WORKSPACE"
+      cat > "$WORKSPACE/ACTIVE_PROJECT.md" << EOF
+# Active Project
+
+- **Title:** $title
+- **Directory:** $proj_dir
+- **Figures:** $proj_dir/figures/
+- **Reports:** $proj_dir/reports/
+- **Data:** $proj_dir/data/
+
+Save all output files to the appropriate subdirectory above.
+EOF
+
+      echo ""
+      if [ "${SCIENCECLAW_LANG:-zh}" = "zh" ]; then
+        echo "  ✅ 项目已创建: $title"
+        echo "     目录: $proj_dir"
+        echo ""
+        echo "  现在启动 ScienceClaw，它会自动将输出保存到该项目目录。"
+      else
+        echo "  ✅ Project created: $title"
+        echo "     Directory: $proj_dir"
+        echo ""
+        echo "  Start ScienceClaw and outputs will be saved to this project."
+      fi
+      echo ""
+      ;;
+
+    list)
+      echo ""
+      if [ "${SCIENCECLAW_LANG:-zh}" = "zh" ]; then
+        echo "  研究项目"
+      else
+        echo "  Research Projects"
+      fi
+      echo ""
+      if [ -d "$PROJECTS_DIR" ] && [ "$(ls -A "$PROJECTS_DIR" 2>/dev/null)" ]; then
+        local active
+        active=$(_get_active_project)
+        for dir in "$PROJECTS_DIR"/*/; do
+          [ -d "$dir" ] || continue
+          local name
+          name=$(basename "$dir")
+          local fc
+          fc=$(find "$dir" -type f 2>/dev/null | wc -l | tr -d ' ')
+          local marker=""
+          if [ -n "$active" ] && head -1 "$dir/README.md" 2>/dev/null | grep -qF "$active"; then
+            marker=" ← active"
+          fi
+          echo "  📁 $name  ($fc files)$marker"
+        done
+      else
+        if [ "${SCIENCECLAW_LANG:-zh}" = "zh" ]; then
+          echo "  暂无项目。创建: ./scienceclaw project new \"课题名称\""
+        else
+          echo "  No projects yet. Create one: ./scienceclaw project new \"topic\""
+        fi
+      fi
+      echo ""
+      ;;
+
+    open)
+      local target="$*"
+      if [ -z "$target" ]; then
+        echo "  Usage: ./scienceclaw project open <name>"
+        return 1
+      fi
+      local found=""
+      for dir in "$PROJECTS_DIR"/*/; do
+        [ -d "$dir" ] || continue
+        if [[ "$(basename "$dir")" == *"$target"* ]]; then
+          found="$dir"
+          break
+        fi
+      done
+      if [ -n "$found" ]; then
+        if command -v open >/dev/null 2>&1; then
+          open "$found"
+        elif command -v xdg-open >/dev/null 2>&1; then
+          xdg-open "$found"
+        else
+          echo "  $found"
+        fi
+      else
+        echo "  ❌ Project not found: $target"
+      fi
+      ;;
+
+    archive)
+      local target="$*"
+      if [ -z "$target" ]; then
+        echo "  Usage: ./scienceclaw project archive <name>"
+        return 1
+      fi
+      local found=""
+      for dir in "$PROJECTS_DIR"/*/; do
+        [ -d "$dir" ] || continue
+        if [[ "$(basename "$dir")" == *"$target"* ]]; then
+          found="$dir"
+          break
+        fi
+      done
+      if [ -n "$found" ]; then
+        mkdir -p "$RUNTIME_DIR/archives"
+        local archive_name
+        archive_name="$(basename "$found").zip"
+        (cd "$PROJECTS_DIR" && zip -r "$RUNTIME_DIR/archives/$archive_name" "$(basename "$found")" >/dev/null 2>&1)
+        if [ "${SCIENCECLAW_LANG:-zh}" = "zh" ]; then
+          echo "  ✅ 已归档: $RUNTIME_DIR/archives/$archive_name"
+        else
+          echo "  ✅ Archived: $RUNTIME_DIR/archives/$archive_name"
+        fi
+      else
+        echo "  ❌ Project not found: $target"
+      fi
+      ;;
+
+    *)
+      echo "  Usage: ./scienceclaw project <new|list|open|archive> [name]"
+      ;;
+  esac
+}
+
 # ── Command dispatch ──────────────────────────────────────────────────
-# Config is built lazily — only for commands that need the gateway.
 
 case "${1:-}" in
-  # ─ no arguments → show scienceclaw help ─
   "")
     show_help
     ;;
 
-  # ─ gateway lifecycle ────────────────────
   run)
     ensure_gateway || exit 1
     echo ""
@@ -437,6 +964,7 @@ case "${1:-}" in
   start)
     _require_engine
     _build_runtime_config || exit 1
+    _check_security || exit 1
     export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
     shift
     exec node "$OPENCLAW" gateway run --force --port "$GW_PORT" "$@"
@@ -446,7 +974,7 @@ case "${1:-}" in
     sleep 1
     ensure_gateway || exit 1
     echo ""
-    echo "  Gateway restarted with fresh config."
+    _msg gw_restarted
     ;;
   stop)
     stop_gateway
@@ -455,10 +983,9 @@ case "${1:-}" in
     show_status
     ;;
   logs)
-    tail -f "$GW_LOG" 2>/dev/null || echo "  No log file at $GW_LOG"
+    tail -f "$GW_LOG" 2>/dev/null || _msg no_log
     ;;
 
-  # ─ channel management (no engine needed) ─
   add)
     shift
     node "$CHANNEL_SCRIPT" add "$@"
@@ -478,7 +1005,30 @@ case "${1:-}" in
     fi
     ;;
 
-  # ─ setup & help (no engine needed) ──────
+  project|projects)
+    shift
+    run_project "$@"
+    ;;
+
+  doctor)
+    run_doctor
+    ;;
+
+  skills)
+    shift
+    if [ "${1:-}" = "search" ]; then
+      shift
+      run_skills "$*"
+    else
+      run_skills "$*"
+    fi
+    ;;
+
+  outputs)
+    shift
+    run_outputs "$@"
+    ;;
+
   setup)
     bash "$ROOT/scripts/setup.sh"
     ;;
@@ -486,7 +1036,15 @@ case "${1:-}" in
     show_help
     ;;
 
-  # ─ pass-through to openclaw CLI ─────────
+  ask)
+    shift
+    _require_engine
+    _build_runtime_config || exit 1
+    ensure_gateway || exit 1
+    export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
+    oc agent --message "$*"
+    ;;
+
   *)
     _require_engine
     _build_runtime_config || exit 1
