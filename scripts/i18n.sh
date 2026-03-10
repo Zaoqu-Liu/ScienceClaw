@@ -63,6 +63,7 @@ _msg() {
       help_outputs)     echo "    outputs             查看输出文件" ;;
       help_logs)        echo "    logs                查看实时日志" ;;
       help_ask)         echo "    ask \"问题\"          一次性提问" ;;
+      help_auto)        echo "    autostart           配置开机自启" ;;
       help_supported)   echo "  支持的渠道:" ;;
       help_ch_list)     echo "    telegram  discord  slack  whatsapp  feishu  matrix  wechat" ;;
 
@@ -84,6 +85,19 @@ _msg() {
       out_empty)        echo "  暂无输出文件" ;;
       out_hint)         echo "  提示: 向 ScienceClaw 提问后，输出文件会出现在这里" ;;
       out_cleaned)      echo "  ✅ 已清理 ${1:-0} 天前的临时文件" ;;
+
+      # ── Autostart ──
+      auto_installed)   echo "  ✅ 开机自启已配置" ;;
+      auto_detail_mac)  echo "     macOS LaunchAgent 已安装，登录后自动启动" ;;
+      auto_detail_linux) echo "     systemd 用户服务已安装，开机后自动启动" ;;
+      auto_keepalive)   echo "     进程崩溃后会在 10 秒内自动恢复" ;;
+      auto_removed)     echo "  ✅ 开机自启已移除" ;;
+      auto_not_found)   echo "  ⬜ 未配置开机自启" ;;
+      auto_status_on)   echo "  🟢 开机自启: 已开启" ;;
+      auto_status_off)  echo "  ⚪ 开机自启: 未开启" ;;
+      auto_unsupported) echo "  ❌ 当前系统不支持自动配置，请手动设置" ;;
+      auto_hint_enable) echo "     开启: ./scienceclaw autostart enable" ;;
+      auto_hint_disable) echo "     关闭: ./scienceclaw autostart disable" ;;
 
       *) echo "  [i18n:$key] $*" ;;
     esac
@@ -142,6 +156,7 @@ _msg() {
       help_outputs)     echo "    outputs             View output files" ;;
       help_logs)        echo "    logs                Tail gateway logs" ;;
       help_ask)         echo "    ask \"query\"          One-shot query" ;;
+      help_auto)        echo "    autostart           Configure auto-start on boot" ;;
       help_supported)   echo "  Supported channels:" ;;
       help_ch_list)     echo "    telegram  discord  slack  whatsapp  feishu  matrix  wechat" ;;
 
@@ -160,6 +175,18 @@ _msg() {
       out_empty)        echo "  No output files yet" ;;
       out_hint)         echo "  Tip: ask ScienceClaw a research question and outputs will appear here" ;;
       out_cleaned)      echo "  ✅ Cleaned temporary files older than ${1:-0} days" ;;
+
+      auto_installed)   echo "  ✅ Autostart configured" ;;
+      auto_detail_mac)  echo "     macOS LaunchAgent installed — starts on login" ;;
+      auto_detail_linux) echo "     systemd user service installed — starts on boot" ;;
+      auto_keepalive)   echo "     Auto-restarts within 10s if process crashes" ;;
+      auto_removed)     echo "  ✅ Autostart removed" ;;
+      auto_not_found)   echo "  ⬜ Autostart not configured" ;;
+      auto_status_on)   echo "  🟢 Autostart: enabled" ;;
+      auto_status_off)  echo "  ⚪ Autostart: not enabled" ;;
+      auto_unsupported) echo "  ❌ Auto-configuration not supported on this OS" ;;
+      auto_hint_enable) echo "     Enable: ./scienceclaw autostart enable" ;;
+      auto_hint_disable) echo "     Disable: ./scienceclaw autostart disable" ;;
 
       *) echo "  [i18n:$key] $*" ;;
     esac

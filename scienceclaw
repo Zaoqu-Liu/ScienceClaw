@@ -495,6 +495,7 @@ show_help() {
   _msg help_outputs
   _msg help_logs
   _msg help_ask
+  _msg help_auto
   echo ""
   _msg help_supported
   _msg help_ch_list
@@ -611,6 +612,14 @@ run_doctor() {
     local log_size
     log_size=$(du -sh "$GW_LOG" 2>/dev/null | cut -f1) || log_size="?"
     _msg doc_ok "Log: $GW_LOG ($log_size)"
+  fi
+
+  echo ""
+  _msg doc_section "--- Autostart ---"
+  if _autostart_is_enabled; then
+    _msg doc_ok "Autostart enabled"
+  else
+    _msg doc_warn "Autostart not configured — run: ./scienceclaw autostart enable"
   fi
 
   echo ""
@@ -941,6 +950,159 @@ EOF
   esac
 }
 
+# ── Autostart command ─────────────────────────────────────────────────
+
+_autostart_plist_path="$HOME/Library/LaunchAgents/com.scienceclaw.gateway.plist"
+_autostart_systemd_path="$HOME/.config/systemd/user/scienceclaw.service"
+
+_find_node_path() {
+  command -v node 2>/dev/null || echo "/usr/local/bin/node"
+}
+
+_autostart_is_enabled() {
+  if [ "$(uname)" = "Darwin" ]; then
+    [ -f "$_autostart_plist_path" ]
+  elif [ -d /run/systemd/system ]; then
+    systemctl --user is-enabled scienceclaw.service >/dev/null 2>&1
+  else
+    return 1
+  fi
+}
+
+_autostart_enable() {
+  _require_engine
+  _build_runtime_config || return 1
+
+  local node_path
+  node_path=$(_find_node_path)
+
+  if [ "$(uname)" = "Darwin" ]; then
+    mkdir -p "$(dirname "$_autostart_plist_path")"
+    cat > "$_autostart_plist_path" << PLIST_EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.scienceclaw.gateway</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>$node_path</string>
+		<string>$OPENCLAW</string>
+		<string>gateway</string>
+		<string>run</string>
+		<string>--force</string>
+		<string>--port</string>
+		<string>$GW_PORT</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>$ROOT</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>StandardOutPath</key>
+	<string>$RUNTIME_DIR/gateway-launchd.log</string>
+	<key>StandardErrorPath</key>
+	<string>$RUNTIME_DIR/gateway-launchd.log</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>$(dirname "$node_path"):/usr/local/bin:/usr/bin:/bin</string>
+		<key>OPENCLAW_CONFIG_PATH</key>
+		<string>$RUNTIME_CONFIG</string>
+	</dict>
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
+	<key>ProcessType</key>
+	<string>Background</string>
+</dict>
+</plist>
+PLIST_EOF
+    launchctl unload "$_autostart_plist_path" 2>/dev/null
+    launchctl load "$_autostart_plist_path"
+    _msg auto_installed
+    _msg auto_detail_mac
+    _msg auto_keepalive
+
+  elif [ -d /run/systemd/system ]; then
+    mkdir -p "$(dirname "$_autostart_systemd_path")"
+    cat > "$_autostart_systemd_path" << SYSTEMD_EOF
+[Unit]
+Description=ScienceClaw Gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=$ROOT
+Environment=PATH=$(dirname "$node_path"):/usr/local/bin:/usr/bin:/bin
+Environment=OPENCLAW_CONFIG_PATH=$RUNTIME_CONFIG
+ExecStart=$node_path $OPENCLAW gateway run --force --port $GW_PORT
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
+SYSTEMD_EOF
+    systemctl --user daemon-reload
+    systemctl --user enable --now scienceclaw.service
+    _msg auto_installed
+    _msg auto_detail_linux
+    _msg auto_keepalive
+
+  else
+    _msg auto_unsupported
+    return 1
+  fi
+}
+
+_autostart_disable() {
+  if [ "$(uname)" = "Darwin" ]; then
+    if [ -f "$_autostart_plist_path" ]; then
+      launchctl unload "$_autostart_plist_path" 2>/dev/null
+      rm -f "$_autostart_plist_path"
+      _msg auto_removed
+    else
+      _msg auto_not_found
+    fi
+  elif [ -d /run/systemd/system ]; then
+    if systemctl --user is-enabled scienceclaw.service >/dev/null 2>&1; then
+      systemctl --user disable --now scienceclaw.service
+      rm -f "$_autostart_systemd_path"
+      systemctl --user daemon-reload
+      _msg auto_removed
+    else
+      _msg auto_not_found
+    fi
+  else
+    _msg auto_unsupported
+  fi
+}
+
+run_autostart() {
+  local subcmd="${1:-status}"
+  echo ""
+  case "$subcmd" in
+    enable|on)
+      _autostart_enable
+      ;;
+    disable|off)
+      _autostart_disable
+      ;;
+    status|*)
+      if _autostart_is_enabled; then
+        _msg auto_status_on
+        _msg auto_hint_disable
+      else
+        _msg auto_status_off
+        _msg auto_hint_enable
+      fi
+      ;;
+  esac
+  echo ""
+}
+
 # ── Command dispatch ──────────────────────────────────────────────────
 
 case "${1:-}" in
@@ -1027,6 +1189,11 @@ case "${1:-}" in
   outputs)
     shift
     run_outputs "$@"
+    ;;
+
+  autostart)
+    shift
+    run_autostart "$@"
     ;;
 
   setup)
