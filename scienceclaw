@@ -32,6 +32,78 @@ CHANNEL_SCRIPT="$ROOT/scripts/channel.mjs"
 
 # ── Config builder ────────────────────────────────────────────────────
 
+_remap_for_openrouter() {
+  local json="$1"
+  local remapped
+  remapped=$(node -e '
+    const c = JSON.parse(process.argv[1]);
+    const providers = (c.models || {}).providers || {};
+
+    const hasOR = Object.values(providers).some(
+      p => (p.baseUrl || "").includes("openrouter.ai")
+    );
+    if (!hasOR) { process.stdout.write(process.argv[1]); process.exit(0); }
+
+    const PROVIDER_PREFIX = { openai: "openai", claude: "anthropic", gemini: "google" };
+    const ID_ALIAS = {
+      "claude-sonnet-4-6": "claude-sonnet-4.6",
+      "claude-opus-4-6":   "claude-opus-4.6",
+    };
+
+    // ── 1. Remap provider model IDs, build ref lookup ────────────────
+    // refMap: "claude/claude-sonnet-4-6" → "claude/anthropic/claude-sonnet-4.6"
+    const refMap = {};
+
+    for (const [key, prov] of Object.entries(providers)) {
+      if (!(prov.baseUrl || "").includes("openrouter.ai")) continue;
+      const prefix = PROVIDER_PREFIX[key] || key;
+      for (const m of (prov.models || [])) {
+        const oldId = m.id;
+        if (oldId.includes("/")) continue;          // already in provider/model format
+        const canonical = ID_ALIAS[oldId] || oldId;
+        const newId = prefix + "/" + canonical;
+        refMap[key + "/" + oldId] = key + "/" + newId;
+        m.id = newId;
+      }
+    }
+
+    // ── 2. Remap agent model references ──────────────────────────────
+    function remapRef(ref) {
+      return ref && refMap[ref] || ref;
+    }
+
+    const agents = c.agents || {};
+    const defaults = (agents.defaults || {}).model || {};
+    if (defaults.primary) defaults.primary = remapRef(defaults.primary);
+    if (Array.isArray(defaults.fallbacks)) {
+      defaults.fallbacks = defaults.fallbacks.map(remapRef);
+    }
+    for (const agent of (agents.list || [])) {
+      const am = agent.model || {};
+      if (am.primary) am.primary = remapRef(am.primary);
+      if (Array.isArray(am.fallbacks)) am.fallbacks = am.fallbacks.map(remapRef);
+    }
+
+    // ── 3. Remap tools.media models ──────────────────────────────────
+    const media = (c.tools || {}).media || {};
+    for (const section of Object.values(media)) {
+      for (const m of (section.models || [])) {
+        if ((m.baseUrl || "").includes("openrouter.ai") && m.model && !m.model.includes("/")) {
+          const prefix = PROVIDER_PREFIX[m.provider] || m.provider;
+          m.model = prefix + "/" + m.model;
+        }
+      }
+    }
+
+    process.stdout.write(JSON.stringify(c, null, 2));
+  ' "$json" 2>/dev/null) || { printf '%s' "$json"; return 0; }
+
+  if [ "$remapped" != "$json" ]; then
+    echo "  🔄 Detected OpenRouter — model IDs remapped automatically" >&2
+  fi
+  printf '%s' "$remapped"
+}
+
 _build_runtime_config() {
   local tpl="$ROOT/openclaw.config.json"
   [ -f "$tpl" ] || { echo "  ❌ openclaw.config.json not found" >&2; return 1; }
@@ -47,6 +119,8 @@ _build_runtime_config() {
     content="${content//${BASH_REMATCH[0]}/$actual_val}"
   done
   content="${content//\.\/skills/$ROOT/skills}"
+
+  content="$(_remap_for_openrouter "$content")"
 
   if [ -n "${TELEGRAM_PROXY:-}" ]; then
     local injected

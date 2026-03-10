@@ -95,7 +95,11 @@ OPENAI_API_KEY=sk-or-your-openrouter-key
 OPENAI_BASE_URL=https://openrouter.ai/api/v1
 CLAUDE_API_KEY=sk-or-your-openrouter-key
 CLAUDE_BASE_URL=https://openrouter.ai/api/v1
+GEMINI_API_KEY=sk-or-your-openrouter-key
+GEMINI_BASE_URL=https://openrouter.ai/api/v1
 ```
+
+> **Note:** ScienceClaw auto-detects OpenRouter and remaps model IDs (e.g. `claude-sonnet-4-6` → `anthropic/claude-sonnet-4.6`). No manual config changes needed.
 
 ### Optional Keys
 
