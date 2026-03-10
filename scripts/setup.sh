@@ -31,11 +31,12 @@ _m() {
     case "$key" in
       title)          echo "  ScienceClaw 安装向导" ;;
       sep)            echo "  =================================" ;;
-      step_prereq)    echo "  [1/5] 检查系统环境..." ;;
-      step_deps)      echo "  [2/5] 安装依赖..." ;;
-      step_apikey)    echo "  [3/5] 配置 API Key..." ;;
-      step_env)       echo "  [4/5] 检查运行环境..." ;;
-      step_channel)   echo "  [5/5] 配置消息渠道..." ;;
+      step_prereq)    echo "  [1/6] 检查系统环境..." ;;
+      step_deps)      echo "  [2/6] 安装依赖..." ;;
+      step_apikey)    echo "  [3/6] 配置 API Key..." ;;
+      step_env)       echo "  [4/6] 检查运行环境..." ;;
+      step_search)    echo "  [5/6] 配置搜索能力（可选）..." ;;
+      step_channel)   echo "  [6/6] 配置消息渠道..." ;;
       node_ok)        echo "    ✅ Node.js $(node -v)" ;;
       node_missing)   echo "    ❌ 未检测到 Node.js (需要 >= 22)" ;;
       node_old)       echo "    ❌ Node.js 版本过低 (当前 $(node -v)，需要 >= 22)" ;;
@@ -66,6 +67,11 @@ _m() {
       apikey_invalid) echo "    ⚠️  API Key 验证失败 (HTTP $1)，请确认 key 和 URL 是否正确" ;;
       apikey_timeout) echo "    ⚠️  连接超时，可能需要配置代理或检查网络" ;;
       apikey_checking) echo "    正在验证 API Key..." ;;
+      search_intro)   echo "    ScienceClaw 使用 Brave Search 进行网页搜索（免费 2000 次/月）。" ;;
+      search_url)     echo "    注册地址: https://api-dashboard.search.brave.com/register" ;;
+      search_input)   printf "    Brave API Key（可选，回车跳过）: " ;;
+      search_saved)   echo "    ✅ 已配置 Brave Search" ;;
+      search_skip)    echo "    跳过。ScienceClaw 仍可通过 PubMed/OpenAlex 等学术 API 搜索。" ;;
       channel_intro)  echo "    ScienceClaw 可以连接到消息平台。" ;;
       channel_later)  echo "    你可以之后随时添加: ./scienceclaw add <channel>" ;;
       channel_list)   echo "    可用渠道:" ;;
@@ -94,11 +100,12 @@ _m() {
     case "$key" in
       title)          echo "  ScienceClaw Setup" ;;
       sep)            echo "  =================================" ;;
-      step_prereq)    echo "  [1/5] Checking prerequisites..." ;;
-      step_deps)      echo "  [2/5] Installing dependencies..." ;;
-      step_apikey)    echo "  [3/5] Configuring API Key..." ;;
-      step_env)       echo "  [4/5] Checking runtime environment..." ;;
-      step_channel)   echo "  [5/5] Channel setup..." ;;
+      step_prereq)    echo "  [1/6] Checking prerequisites..." ;;
+      step_deps)      echo "  [2/6] Installing dependencies..." ;;
+      step_apikey)    echo "  [3/6] Configuring API Key..." ;;
+      step_env)       echo "  [4/6] Checking runtime environment..." ;;
+      step_search)    echo "  [5/6] Web search setup (optional)..." ;;
+      step_channel)   echo "  [6/6] Channel setup..." ;;
       node_ok)        echo "    ✅ Node.js $(node -v)" ;;
       node_missing)   echo "    ❌ Node.js not found (>= 22 required)" ;;
       node_old)       echo "    ❌ Node.js too old (found $(node -v), need >= 22)" ;;
@@ -129,6 +136,11 @@ _m() {
       apikey_invalid) echo "    ⚠️  API Key validation failed (HTTP $1), check your key and URL" ;;
       apikey_timeout) echo "    ⚠️  Connection timed out, check network or proxy settings" ;;
       apikey_checking) echo "    Validating API Key..." ;;
+      search_intro)   echo "    ScienceClaw uses Brave Search for web search (free, 2000 queries/month)." ;;
+      search_url)     echo "    Sign up: https://api-dashboard.search.brave.com/register" ;;
+      search_input)   printf "    Brave API Key (optional, Enter to skip): " ;;
+      search_saved)   echo "    ✅ Brave Search configured" ;;
+      search_skip)    echo "    Skipped. ScienceClaw can still search via PubMed/OpenAlex APIs." ;;
       channel_intro)  echo "    ScienceClaw can connect to messaging platforms." ;;
       channel_later)  echo "    You can always add more later: ./scienceclaw add <channel>" ;;
       channel_list)   echo "    Available channels:" ;;
@@ -304,7 +316,30 @@ else
   _m r_hint
 fi
 
-# ── 5. Channel setup ─────────────────────────────────────────────────
+# ── 5. Web search setup ───────────────────────────────────────────────
+
+echo ""
+_m step_search
+if [ -f "$ENV_FILE" ] && grep -q "^BRAVE_API_KEY=" "$ENV_FILE" 2>/dev/null; then
+  _m search_saved
+else
+  echo ""
+  _m search_intro
+  _m search_url
+  echo ""
+  _m search_input
+  read BRAVE_KEY
+  if [ -n "$BRAVE_KEY" ]; then
+    if [ -f "$ENV_FILE" ]; then
+      echo "BRAVE_API_KEY=$BRAVE_KEY" >> "$ENV_FILE"
+    fi
+    _m search_saved
+  else
+    _m search_skip
+  fi
+fi
+
+# ── 6. Channel setup ─────────────────────────────────────────────────
 
 echo ""
 _m step_channel

@@ -157,70 +157,110 @@ Always list all output files with their full paths so the user can find them:
 
 ## Academic Literature Search
 
-**Use `bash` with `curl` for ALL searches.** Do NOT use `web_search` (it is disabled). Do NOT use `web_fetch` for academic APIs (SSRF filter may block them). Instead, always use `bash` to call `curl` directly.
+You have two search channels. Use both.
 
-**1. PubMed** -- biomedical literature, primary source
-```
-bash: curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=10&term=YOUR+QUERY"
-```
-Then fetch abstracts:
-```
-bash: curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=PMID1,PMID2,PMID3"
-```
+### Channel 1: `web_search` — general web search (Brave)
 
-**2. OpenAlex** -- broad academic, citation counts
-```
-bash: curl -s "https://api.openalex.org/works?search=YOUR+QUERY&per_page=10&select=id,title,authorships,publication_year,cited_by_count,doi,primary_location"
-```
+If `web_search` is available (Brave API key configured), use it for broad discovery:
+- General topic exploration
+- Finding review articles and recent news
+- Discovering databases and tools you didn't know about
 
-**3. Semantic Scholar** -- citation context, related papers
-```
-bash: curl -s "https://api.semanticscholar.org/graph/v1/paper/search?query=YOUR+QUERY&limit=10&fields=title,authors,year,abstract,citationCount,externalIds,url"
-```
+If `web_search` fails or is not configured, skip it silently and use Channel 2.
 
-**4. Europe PMC** -- European biomedical, full text access
-```
-bash: curl -s "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=YOUR+QUERY&format=json&pageSize=10&resultType=core"
-```
+### Channel 2: `bash` + `curl` — academic APIs (always available, primary channel)
 
-**5. Read full papers** -- deep dive via Jina Reader
+**This is your main research tool.** Use `bash` with `curl` to query academic APIs directly. Do NOT use `web_fetch` (it may be blocked by SSRF protection). Always use `bash: curl -s "URL"`.
+
+### Step 1: Multi-source parallel search
+
+For any research query, search ALL relevant sources in a SINGLE bash block:
+
 ```
-bash: curl -s "https://r.jina.ai/PAPER_URL"
+bash: echo "=== PubMed ===" && \
+curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=20&sort=relevance&term=QUERY" && \
+echo -e "\n=== OpenAlex ===" && \
+curl -s "https://api.openalex.org/works?search=QUERY&per_page=10&sort=relevance_score:desc&select=id,title,authorships,publication_year,cited_by_count,doi,primary_location" && \
+echo -e "\n=== Semantic Scholar ===" && \
+curl -s "https://api.semanticscholar.org/graph/v1/paper/search?query=QUERY&limit=10&fields=title,authors,year,abstract,citationCount,externalIds,url"
 ```
 
-**Strategy**: Start with PubMed for biomedical topics. Use OpenAlex for broader results and citation counts. Use Semantic Scholar for citation context. Read full text of the most relevant papers via Jina Reader. Always cross-reference across sources. Combine multiple curl calls in a single bash block.
+### Step 2: Fetch abstracts for top hits
+
+After getting PMIDs, immediately fetch their full metadata and abstracts:
+
+```
+bash: curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=PMID1,PMID2,PMID3,PMID4,PMID5"
+```
+
+Parse the XML to extract: title, authors, journal, year, DOI, and abstract text for each paper.
+
+### Step 3: Citation chain tracking
+
+For the most important papers, trace their citation network using Semantic Scholar:
+
+**Forward citations** (who cited this paper):
+```
+bash: curl -s "https://api.semanticscholar.org/graph/v1/paper/PMID:12345678/citations?fields=title,authors,year,citationCount&limit=10"
+```
+
+**References** (what this paper cited):
+```
+bash: curl -s "https://api.semanticscholar.org/graph/v1/paper/PMID:12345678/references?fields=title,authors,year,citationCount&limit=10"
+```
+
+### Step 4: Full text for key papers
+
+For the 2-3 most relevant papers, read the full text via Jina Reader:
+
+```
+bash: curl -s "https://r.jina.ai/https://doi.org/10.1234/example"
+```
+
+Or via Europe PMC full text:
+```
+bash: curl -s "https://www.ebi.ac.uk/europepmc/webservices/rest/PMID/fullTextXML"
+```
+
+### Search depth guidelines
+
+| Query type | Expected depth |
+|-----------|---------------|
+| Quick question ("BRCA1 是什么") | PubMed top 5 + abstracts |
+| Literature survey ("调研 SEMA3C 在肿瘤中的作用") | 3 sources x 20 papers, top 10 abstracts, 2-3 full text, citation chains |
+| Systematic review | 4+ sources x 50 papers, all abstracts, 5-10 full text, forward+backward citations |
+| Person research ("调研某某教授") | OpenAlex author search + PubMed author search + citation metrics |
 
 ---
 
 ## Scientific Database Queries
 
-Use `bash` with `curl` to query database REST APIs directly. The most important ones:
+Use `bash` with `curl` to query database REST APIs directly (not `web_fetch`):
 
 **Genomics & Transcriptomics**
-- **NCBI Gene**: `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&retmode=json&term=GENE_NAME+AND+human[orgn]`
-- **Ensembl**: `https://rest.ensembl.org/lookup/symbol/homo_sapiens/GENE_NAME?content-type=application/json;expand=1`
-- **GTEx** (expression): `https://gtexportal.org/api/v2/expression/medianGeneExpression?gencodeId=ENSG_ID&datasetId=gtex_v8`
+- **NCBI Gene**: `curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&retmode=json&term=GENE+AND+human[orgn]"`
+- **Ensembl**: `curl -s "https://rest.ensembl.org/lookup/symbol/homo_sapiens/GENE?content-type=application/json;expand=1"`
+- **GTEx**: `curl -s "https://gtexportal.org/api/v2/expression/medianGeneExpression?gencodeId=ENSG_ID&datasetId=gtex_v8"`
 
 **Proteomics & Structure**
-- **UniProt**: `https://rest.uniprot.org/uniprotkb/search?query=gene_exact:GENE_NAME+AND+organism_id:9606&format=json&size=5`
-- **PDB**: `https://search.rcsb.org/rcsbsearch/v2/query?json={"query":{"type":"terminal","service":"full_text","parameters":{"value":"QUERY"}},"return_type":"entry"}`
-- **AlphaFold**: `https://alphafold.ebi.ac.uk/api/prediction/UNIPROT_ID`
-- **STRING** (interactions): `https://string-db.org/api/json/network?identifiers=GENE_NAME&species=9606`
+- **UniProt**: `curl -s "https://rest.uniprot.org/uniprotkb/search?query=gene_exact:GENE+AND+organism_id:9606&format=json&size=5"`
+- **AlphaFold**: `curl -s "https://alphafold.ebi.ac.uk/api/prediction/UNIPROT_ID"`
+- **STRING**: `curl -s "https://string-db.org/api/json/network?identifiers=GENE&species=9606"`
 
 **Chemistry & Drugs**
-- **ChEMBL**: `https://www.ebi.ac.uk/chembl/api/data/molecule/search.json?q=COMPOUND_NAME&limit=5`
-- **PubChem**: `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/COMPOUND_NAME/JSON`
-- **OpenTargets**: `https://api.platform.opentargets.org/api/v4/graphql` (POST with GraphQL)
+- **ChEMBL**: `curl -s "https://www.ebi.ac.uk/chembl/api/data/molecule/search.json?q=NAME&limit=5"`
+- **PubChem**: `curl -s "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/NAME/JSON"`
+- **OpenTargets**: POST GraphQL to `https://api.platform.opentargets.org/api/v4/graphql`
 
 **Clinical**
-- **ClinicalTrials**: `https://clinicaltrials.gov/api/v2/studies?query.term=QUERY&pageSize=10`
-- **ClinVar**: `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=clinvar&retmode=json&term=GENE_NAME`
+- **ClinicalTrials**: `curl -s "https://clinicaltrials.gov/api/v2/studies?query.term=QUERY&pageSize=10"`
+- **ClinVar**: `curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=clinvar&retmode=json&term=GENE"`
 
 **Pathways & Enrichment**
-- **Enrichr**: `https://maayanlab.cloud/Enrichr/addList` (POST gene list), then `https://maayanlab.cloud/Enrichr/enrich?userListId=ID&backgroundType=KEGG_2021_Human`
-- **Reactome**: `https://reactome.org/ContentService/search/query?query=GENE_NAME&types=Pathway&species=Homo+sapiens`
+- **Enrichr**: POST gene list to `https://maayanlab.cloud/Enrichr/addList`, then GET enrich results
+- **Reactome**: `curl -s "https://reactome.org/ContentService/search/query?query=GENE&types=Pathway&species=Homo+sapiens"`
 
-For databases not listed here, use `bash` with `curl` to query their REST APIs. All URLs above should be called via `bash: curl -s "URL"` rather than `web_fetch`.
+All database queries use `bash: curl -s "URL"`. Combine related queries in a single bash block.
 
 ---
 

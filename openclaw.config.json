@@ -97,7 +97,10 @@
   "tools": {
     "web": {
       "search": {
-        "enabled": false
+        "enabled": true,
+        "provider": "brave",
+        "apiKey": "${BRAVE_API_KEY}",
+        "maxResults": 10
       },
       "fetch": {
         "enabled": true,
