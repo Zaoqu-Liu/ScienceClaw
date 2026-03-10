@@ -51,10 +51,16 @@ _remap_for_openrouter() {
     );
     if (!hasOR) { process.stdout.write(process.argv[1]); process.exit(0); }
 
-    const PROVIDER_PREFIX = { openai: "openai", claude: "anthropic", gemini: "google" };
+    const PROVIDER_PREFIX = {
+      openai: "openai", claude: "anthropic", gemini: "google",
+      deepseek: "deepseek", qwen: "qwen", meta: "meta-llama",
+      mistral: "mistralai", cohere: "cohere", kimi: "moonshotai",
+    };
     const ID_ALIAS = {
       "claude-sonnet-4-6": "claude-sonnet-4.6",
       "claude-opus-4-6":   "claude-opus-4.6",
+      "deepseek-chat":     "deepseek-chat",
+      "deepseek-reasoner": "deepseek-r1",
     };
 
     const refMap = {};
@@ -124,6 +130,7 @@ _build_runtime_config() {
   content="${content//\.\/skills/$ROOT/skills}"
 
   content="$(_remap_for_openrouter "$content")"
+  content="$(_prune_unconfigured_providers "$content")"
 
   if [ -n "${TELEGRAM_PROXY:-}" ]; then
     local injected
@@ -138,6 +145,64 @@ _build_runtime_config() {
   fi
 
   printf '%s' "$content" > "$RUNTIME_CONFIG"
+}
+
+_prune_unconfigured_providers() {
+  local json="$1"
+  node -e '
+    const c = JSON.parse(process.argv[1]);
+    const providers = (c.models || {}).providers || {};
+    const removed = [];
+    for (const [key, prov] of Object.entries(providers)) {
+      const k = prov.apiKey || "";
+      if (!k || k.includes("your-key") || k.includes("your-") || k.length < 8) {
+        removed.push(key);
+        delete providers[key];
+      }
+    }
+
+    if (removed.length) {
+      const remaining = Object.keys(providers);
+      if (remaining.length === 0) {
+        process.stderr.write("  ⚠️  No valid API keys found — run: ./scienceclaw setup\n");
+        process.stdout.write(process.argv[1]);
+        process.exit(0);
+      }
+
+      const agents = c.agents || {};
+      const defaults = (agents.defaults || {}).model || {};
+      const firstProvider = remaining[0];
+      const firstModel = (providers[firstProvider].models || [])[0];
+
+      function isAlive(ref) {
+        if (!ref) return false;
+        const prov = ref.split("/")[0];
+        return remaining.includes(prov);
+      }
+
+      if (defaults.primary && !isAlive(defaults.primary)) {
+        if (firstModel) {
+          defaults.primary = firstProvider + "/" + firstModel.id;
+          process.stderr.write("  🔄 Primary model auto-switched to " + defaults.primary + "\n");
+        }
+      }
+      if (Array.isArray(defaults.fallbacks)) {
+        defaults.fallbacks = defaults.fallbacks.filter(isAlive);
+      }
+
+      for (const agent of (agents.list || [])) {
+        const am = agent.model || {};
+        if (am.primary && !isAlive(am.primary)) {
+          if (firstModel) am.primary = firstProvider + "/" + firstModel.id;
+        }
+        if (Array.isArray(am.fallbacks)) {
+          am.fallbacks = am.fallbacks.filter(isAlive);
+        }
+      }
+    }
+
+    process.stdout.write(JSON.stringify(c, null, 2));
+  ' "$json" 2>/dev/null || printf '%s' "$json"
 }
 
 # ── OpenClaw discovery ────────────────────────────────────────────────
@@ -490,6 +555,7 @@ show_help() {
   _msg help_adv
   _msg help_tui
   _msg help_dash
+  _msg help_models
   _msg help_doctor
   _msg help_skills
   _msg help_outputs
@@ -545,22 +611,48 @@ run_doctor() {
   echo ""
   _msg doc_section "--- API ---"
 
-  # API key
-  if [ -n "${OPENAI_API_KEY:-}" ] && [ "$OPENAI_API_KEY" != "sk-your-key" ]; then
-    local base_url="${OPENAI_BASE_URL:-https://api.openai.com/v1}"
-    local http_code
-    http_code=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 \
-      -H "Authorization: Bearer $OPENAI_API_KEY" \
-      "${base_url}/models" 2>/dev/null) || http_code="timeout"
-    if [ "$http_code" = "200" ]; then
-      _msg doc_ok "API Key valid ($base_url)"
-    elif [ "$http_code" = "timeout" ] || [ "$http_code" = "000" ]; then
-      _msg doc_warn "API unreachable ($base_url) — check network/proxy"
-    else
-      _msg doc_fail "API Key invalid (HTTP $http_code from $base_url)"
+  _check_provider_api() {
+    local name="$1" base_url="$2" api_key="$3"
+    if [ -z "$api_key" ] || [ "$api_key" = "sk-your-key" ] || [ "$api_key" = "your-key" ]; then
+      return 1
     fi
-  else
-    _msg doc_fail "No API Key configured — run: ./scienceclaw setup"
+    local http_code body
+    body=$(curl -s -w "\n%{http_code}" --connect-timeout 5 \
+      -H "Authorization: Bearer $api_key" \
+      "${base_url}/models" 2>/dev/null) || { _msg doc_warn "$name: connection failed ($base_url)"; return 1; }
+    http_code=$(echo "$body" | tail -1)
+    if [ "$http_code" = "200" ]; then
+      _msg doc_ok "$name: API reachable ($base_url)"
+      return 0
+    elif [ "$http_code" = "401" ] || [ "$http_code" = "403" ]; then
+      _msg doc_fail "$name: invalid key or region-blocked (HTTP $http_code)"
+      return 1
+    elif [ "$http_code" = "000" ]; then
+      _msg doc_warn "$name: connection timeout ($base_url)"
+      return 1
+    else
+      _msg doc_warn "$name: HTTP $http_code ($base_url)"
+      return 1
+    fi
+  }
+
+  local _any_provider=false
+
+  if [ -n "${OPENAI_API_KEY:-}" ] && [ "$OPENAI_API_KEY" != "sk-your-key" ]; then
+    _check_provider_api "OpenAI" "${OPENAI_BASE_URL:-https://api.openai.com/v1}" "$OPENAI_API_KEY" && _any_provider=true
+  fi
+  if [ -n "${CLAUDE_API_KEY:-}" ] && [ "$CLAUDE_API_KEY" != "sk-your-key" ]; then
+    _check_provider_api "Claude" "${CLAUDE_BASE_URL:-https://api.anthropic.com/v1}" "$CLAUDE_API_KEY" && _any_provider=true
+  fi
+  if [ -n "${GEMINI_API_KEY:-}" ] && [ "$GEMINI_API_KEY" != "your-key" ]; then
+    _check_provider_api "Gemini" "${GEMINI_BASE_URL:-https://generativelanguage.googleapis.com/v1beta}" "$GEMINI_API_KEY" && _any_provider=true
+  fi
+  if [ -n "${DEEPSEEK_API_KEY:-}" ]; then
+    _check_provider_api "DeepSeek" "${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}" "$DEEPSEEK_API_KEY" && _any_provider=true
+  fi
+
+  if ! $_any_provider; then
+    _msg doc_fail "No working API provider — run: ./scienceclaw setup"
   fi
 
   # Gateway token
@@ -1103,6 +1195,320 @@ run_autostart() {
   echo ""
 }
 
+# ── Models command ─────────────────────────────────────────────────────
+
+run_models() {
+  local subcmd="${1:-}"
+  echo ""
+
+  if [ ! -f "$RUNTIME_CONFIG" ]; then
+    _build_runtime_config 2>/dev/null || true
+  fi
+
+  if [ ! -f "$RUNTIME_CONFIG" ]; then
+    _msg doc_fail "$(_msg_str models_no_config)"
+    echo ""
+    return 1
+  fi
+
+  node -e '
+    const fs = require("fs");
+    const https = require("https");
+    const http = require("http");
+
+    const lang = process.env.SCIENCECLAW_LANG || "zh";
+    const T = {
+      title:        lang === "zh" ? "  🔬 ScienceClaw 模型检测" : "  🔬 ScienceClaw Model Check",
+      scanning:     lang === "zh" ? "  正在检测已配置的模型..." : "  Scanning configured models...",
+      current:      lang === "zh" ? "  当前主模型" : "  Current primary model",
+      testing:      lang === "zh" ? "  正在逐个测试..." : "  Testing each model...",
+      results:      lang === "zh" ? "  检测结果" : "  Results",
+      ok:           "✅",
+      fail:         "❌",
+      warn:         "⚠️ ",
+      recommend:    lang === "zh" ? "  💡 建议" : "  💡 Recommendation",
+      err_404:      lang === "zh" ? "模型已下架" : "model removed/deprecated",
+      err_403:      lang === "zh" ? "地区不可用" : "region-blocked",
+      err_429:      lang === "zh" ? "免费额度被挤爆，请稍后重试" : "rate limited, try later",
+      err_402:      lang === "zh" ? "账户余额不足或额度用尽" : "account balance depleted",
+      err_401:      lang === "zh" ? "API Key 无效" : "invalid API key",
+      err_timeout:  lang === "zh" ? "连接超时" : "connection timeout",
+      err_unknown:  lang === "zh" ? "未知错误" : "unknown error",
+      tip_switch:   lang === "zh"
+        ? "  当前模型不可用。请在 TUI 中用 /model 命令切换到上面 ✅ 的模型"
+        : "  Current model unavailable. Use /model in TUI to switch to a ✅ model above",
+      tip_allgood:  lang === "zh"
+        ? "  当前模型工作正常！"
+        : "  Current model is working!",
+      tip_free:     lang === "zh"
+        ? "  免费模型不稳定，建议使用 DeepSeek（很便宜）或 yunwu.ai 中转"
+        : "  Free models are unstable. Consider DeepSeek (very cheap) or yunwu.ai relay",
+      tip_nokey:    lang === "zh"
+        ? "  没有找到有效的 API Key。请运行: ./scienceclaw setup"
+        : "  No valid API key found. Run: ./scienceclaw setup",
+    };
+
+    function friendlyError(code, body) {
+      if (code === 404) return T.err_404;
+      if (code === 403) return T.err_403;
+      if (code === 429) return T.err_429;
+      if (code === 402) return T.err_402;
+      if (code === 401) return T.err_401;
+      if (code === 0)   return T.err_timeout;
+      try {
+        const msg = JSON.parse(body).error?.message || "";
+        if (msg.includes("No endpoints")) return T.err_404;
+        if (msg.includes("not available in your region")) return T.err_403;
+        if (msg.includes("rate limit") || msg.includes("Rate limit")) return T.err_429;
+        if (msg.includes("balance") || msg.includes("spend limit")) return T.err_402;
+        if (msg.length > 0) return msg.slice(0, 60);
+      } catch {}
+      return T.err_unknown + " (HTTP " + code + ")";
+    }
+
+    function testModel(baseUrl, apiKey, modelId) {
+      return new Promise((resolve) => {
+        const payload = JSON.stringify({
+          model: modelId,
+          messages: [{ role: "user", content: "hi" }],
+          max_tokens: 3,
+        });
+        const url = new URL(baseUrl.replace(/\/+$/, "") + "/chat/completions");
+        const mod = url.protocol === "https:" ? https : http;
+        const req = mod.request(url, {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + apiKey,
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(payload),
+          },
+          timeout: 15000,
+        }, (res) => {
+          let data = "";
+          res.on("data", (d) => data += d);
+          res.on("end", () => resolve({ code: res.statusCode, body: data }));
+        });
+        req.on("error", () => resolve({ code: 0, body: "" }));
+        req.on("timeout", () => { req.destroy(); resolve({ code: 0, body: "" }); });
+        req.write(payload);
+        req.end();
+      });
+    }
+
+    async function main() {
+      const config = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+      const providers = (config.models || {}).providers || {};
+      const defaults = ((config.agents || {}).defaults || {}).model || {};
+      const primary = defaults.primary || "";
+      const fallbacks = defaults.fallbacks || [];
+
+      console.log(T.title);
+      console.log("");
+
+      const allRefs = [primary, ...fallbacks].filter(Boolean);
+      if (allRefs.length === 0) {
+        console.log("  " + T.fail + " " + T.tip_nokey);
+        console.log("");
+        return;
+      }
+
+      console.log(T.current + ": " + primary);
+      console.log(T.testing);
+      console.log("");
+
+      let primaryOk = false;
+      let hasFreeModel = false;
+      let firstGood = null;
+
+      for (const ref of allRefs) {
+        const parts = ref.split("/");
+        const provKey = parts[0];
+        const modelId = parts.slice(1).join("/");
+        const prov = providers[provKey];
+        if (!prov) {
+          console.log("    " + T.fail + " " + ref + " — provider \"" + provKey + "\" not configured");
+          continue;
+        }
+
+        const result = await testModel(prov.baseUrl, prov.apiKey, modelId);
+        if (result.code === 200) {
+          const marker = ref === primary ? " ← current" : "";
+          console.log("    " + T.ok + " " + ref + marker);
+          if (ref === primary) primaryOk = true;
+          if (!firstGood) firstGood = ref;
+        } else {
+          const reason = friendlyError(result.code, result.body);
+          const marker = ref === primary ? " ← current" : "";
+          console.log("    " + T.fail + " " + ref + marker + " — " + reason);
+        }
+
+        if (modelId.includes(":free")) hasFreeModel = true;
+      }
+
+      console.log("");
+      console.log(T.recommend);
+      if (primaryOk) {
+        console.log(T.tip_allgood);
+      } else if (firstGood) {
+        console.log(T.tip_switch);
+        console.log("     " + T.ok + " " + firstGood);
+      } else {
+        console.log("  " + T.fail + " " + T.tip_nokey);
+      }
+
+      if (hasFreeModel) {
+        console.log("");
+        console.log("  " + T.warn + T.tip_free);
+      }
+
+      console.log("");
+    }
+
+    main().catch(e => { console.error("  Error:", e.message); process.exit(1); });
+  ' "$RUNTIME_CONFIG"
+}
+
+# ── Preflight model check ──────────────────────────────────────────────
+
+_preflight_model_check() {
+  [ -f "$RUNTIME_CONFIG" ] || return 0
+
+  local result
+  result=$(node -e '
+    const fs = require("fs");
+    const https = require("https");
+    const http = require("http");
+    const config = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+    const providers = (config.models || {}).providers || {};
+    const defaults = ((config.agents || {}).defaults || {}).model || {};
+    const primary = defaults.primary || "";
+    if (!primary) { console.log("skip"); process.exit(0); }
+
+    const parts = primary.split("/");
+    const provKey = parts[0];
+    const modelId = parts.slice(1).join("/");
+    const prov = providers[provKey];
+    if (!prov || !prov.apiKey) { console.log("skip"); process.exit(0); }
+
+    const payload = JSON.stringify({
+      model: modelId,
+      messages: [{ role: "user", content: "hi" }],
+      max_tokens: 3,
+    });
+    const url = new URL(prov.baseUrl.replace(/\/+$/, "") + "/chat/completions");
+    const mod = url.protocol === "https:" ? https : http;
+    const req = mod.request(url, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + prov.apiKey,
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(payload),
+      },
+      timeout: 15000,
+    }, (res) => {
+      let data = "";
+      res.on("data", d => data += d);
+      res.on("end", () => {
+        if (res.statusCode === 200) {
+          console.log("ok");
+        } else {
+          let reason = "HTTP " + res.statusCode;
+          try {
+            const msg = JSON.parse(data).error?.message || "";
+            if (res.statusCode === 404) reason = "model_removed";
+            else if (res.statusCode === 403 && msg.includes("region")) reason = "region_blocked";
+            else if (res.statusCode === 429) reason = "rate_limited";
+            else if (res.statusCode === 402) reason = "no_balance";
+            else if (res.statusCode === 401) reason = "bad_key";
+            else reason = msg.slice(0, 80) || reason;
+          } catch {}
+          console.log("fail:" + res.statusCode + ":" + reason);
+        }
+      });
+    });
+    req.on("error", () => console.log("fail:0:timeout"));
+    req.on("timeout", () => { req.destroy(); console.log("fail:0:timeout"); });
+    req.write(payload);
+    req.end();
+  ' "$RUNTIME_CONFIG" 2>/dev/null) || result="skip"
+
+  if [ "$result" = "ok" ] || [ "$result" = "skip" ]; then
+    return 0
+  fi
+
+  local code reason model_name
+  code=$(echo "$result" | cut -d: -f2)
+  reason=$(echo "$result" | cut -d: -f3-)
+  model_name=$(_get_model_name)
+
+  echo ""
+  if [ "${SCIENCECLAW_LANG:-zh}" = "zh" ]; then
+    echo "  ⚠️  当前模型 ($model_name) 不可用"
+    echo ""
+    case "$reason" in
+      model_removed)
+        echo "  原因: 该模型已从服务商下架"
+        echo "  解决: 进入 TUI 后输入 /model 切换到其他模型" ;;
+      region_blocked)
+        echo "  原因: 该模型在你所在地区不可用"
+        echo "  解决: 换一个没有地区限制的模型（如 DeepSeek 或 Gemma）" ;;
+      rate_limited)
+        echo "  原因: 免费模型太多人用了，请求被限流"
+        echo "  解决: 稍等几分钟重试，或切换到付费模型（更稳定）" ;;
+      no_balance)
+        echo "  原因: API 账户余额不足或消费限额已用完"
+        echo "  解决: 去服务商后台充值，或切换到免费模型" ;;
+      bad_key)
+        echo "  原因: API Key 无效或已过期"
+        echo "  解决: 检查 .env 中的 API Key 是否正确" ;;
+      timeout)
+        echo "  原因: 连接超时（网络问题或需要代理）"
+        echo "  解决: 检查网络连接，国内用户建议用 DeepSeek 或 yunwu.ai 中转" ;;
+      *)
+        echo "  原因: $reason"
+        echo "  解决: 运行 ./scienceclaw models 查看哪些模型可用" ;;
+    esac
+    echo ""
+    echo "  💡 小贴士: 运行 ./scienceclaw models 可以检测所有模型的状态"
+    echo "  💡 进入 TUI 后输入 /model 可以切换模型"
+    echo ""
+    echo "  仍然继续启动吗？(模型错误不影响其他功能，你可以进去后切换模型)"
+  else
+    echo "  ⚠️  Current model ($model_name) is unavailable"
+    echo ""
+    case "$reason" in
+      model_removed)
+        echo "  Cause: This model has been removed from the provider"
+        echo "  Fix:   Use /model in TUI to switch to another model" ;;
+      region_blocked)
+        echo "  Cause: This model is not available in your region"
+        echo "  Fix:   Switch to a model without region restrictions (e.g. DeepSeek, Gemma)" ;;
+      rate_limited)
+        echo "  Cause: Free model is overloaded (rate limited)"
+        echo "  Fix:   Wait a few minutes or switch to a paid model (more reliable)" ;;
+      no_balance)
+        echo "  Cause: Account balance depleted or spend limit reached"
+        echo "  Fix:   Top up your account or switch to a free model" ;;
+      bad_key)
+        echo "  Cause: API key is invalid or expired"
+        echo "  Fix:   Check the API key in your .env file" ;;
+      timeout)
+        echo "  Cause: Connection timed out"
+        echo "  Fix:   Check network. China users: try DeepSeek or yunwu.ai relay" ;;
+      *)
+        echo "  Cause: $reason"
+        echo "  Fix:   Run ./scienceclaw models to check model availability" ;;
+    esac
+    echo ""
+    echo "  💡 Tip: Run ./scienceclaw models to check all models"
+    echo "  💡 Use /model in TUI to switch models"
+    echo ""
+    echo "  Continue anyway? (You can switch models inside the TUI)"
+  fi
+  echo ""
+  return 0
+}
+
 # ── Command dispatch ──────────────────────────────────────────────────
 
 case "${1:-}" in
@@ -1112,12 +1518,14 @@ case "${1:-}" in
 
   run)
     ensure_gateway || exit 1
+    _preflight_model_check
     echo ""
     export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
     oc tui
     ;;
   tui)
     ensure_gateway || exit 1
+    _preflight_model_check
     echo ""
     shift
     export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
@@ -1170,6 +1578,11 @@ case "${1:-}" in
   project|projects)
     shift
     run_project "$@"
+    ;;
+
+  models|model)
+    _build_runtime_config 2>/dev/null || true
+    run_models
     ;;
 
   doctor)

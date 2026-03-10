@@ -58,6 +58,7 @@ _msg() {
       help_adv)         echo "  更多:" ;;
       help_tui)         echo "    tui                 终端界面（自动启动服务）" ;;
       help_dash)        echo "    dashboard           网页面板" ;;
+      help_models)      echo "    models              检测模型状态（哪些能用、哪些挂了）" ;;
       help_doctor)      echo "    doctor              全面健康检查" ;;
       help_skills)      echo "    skills              浏览专业能力（264 项）" ;;
       help_outputs)     echo "    outputs             查看输出文件" ;;
@@ -151,6 +152,7 @@ _msg() {
       help_adv)         echo "  Advanced:" ;;
       help_tui)         echo "    tui                 Open TUI (auto-starts gateway)" ;;
       help_dash)        echo "    dashboard           Open web dashboard" ;;
+      help_models)      echo "    models              Check model status (which ones work)" ;;
       help_doctor)      echo "    doctor              Full health check" ;;
       help_skills)      echo "    skills              Browse capabilities (264 skills)" ;;
       help_outputs)     echo "    outputs             View output files" ;;

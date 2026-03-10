@@ -1,30 +1,27 @@
 # Installation
 
-This guide walks you through installing ScienceClaw from scratch.
+This guide walks you through installing ScienceClaw from scratch. No programming experience needed.
 
 ---
 
 ## System Requirements
 
-| Requirement | Minimum | Recommended |
-|-------------|---------|-------------|
-| **Node.js** | 22.12.0+ | Latest LTS (22.x) |
-| **Python** | 3.10+ | 3.12+ |
-| **pnpm** | 9.0+ | Latest |
-| **OS** | macOS 13+, Ubuntu 22.04+, Windows (WSL2) | macOS or Linux |
-| **Docker** | 24.0+ (optional, for sandbox) | Latest |
-| **RAM** | 4 GB | 8 GB+ |
-| **Disk** | 500 MB | 2 GB (with Python packages) |
+| Requirement | Minimum | Notes |
+|-------------|---------|-------|
+| **Node.js** | 22+ | Required — [nodejs.org](https://nodejs.org/) |
+| **pnpm** | 9.0+ | Required — installed automatically by setup |
+| **Python** | 3.10+ | For code execution (optional but recommended) |
+| **OS** | macOS 13+, Ubuntu 22.04+, Windows (WSL2) | macOS or Linux recommended |
+| **Docker** | 24.0+ | Optional — for sandboxed code execution |
 
-### Verify Prerequisites
+### Check Your System
 
 ```bash
 node -v        # Should print v22.x.x or higher
 python3 -V     # Should print Python 3.10+
-pnpm -v        # Should print 9.x+
 ```
 
-If Node.js is not installed or is too old:
+**Node.js not installed?**
 
 ```bash
 # macOS (Homebrew)
@@ -34,221 +31,185 @@ brew install node@22
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
-# Any platform (nvm)
-nvm install 22
-nvm use 22
-```
-
-If pnpm is not installed:
-
-```bash
-npm install -g pnpm
+# Any platform (fnm — fastest)
+curl -fsSL https://fnm.vercel.app/install | bash && fnm install 22
 ```
 
 ---
 
-## Step 1: Clone and Configure
+## Step 1 — Clone
 
 ```bash
 git clone https://github.com/Zaoqu-Liu/ScienceClaw.git
 cd ScienceClaw
-cp .env.example .env        # add your API keys
 ```
 
-Edit `.env` with your preferred editor. You need **at least one LLM provider** configured.
+## Step 2 — Run Setup
 
-### Option A: Direct API Access
-
-Use your API keys directly with the official provider endpoints:
-
-```bash
-# OpenAI
-OPENAI_API_KEY=sk-your-openai-key
-OPENAI_BASE_URL=https://api.openai.com/v1
-
-# Anthropic (Claude)
-CLAUDE_API_KEY=sk-ant-your-claude-key
-CLAUDE_BASE_URL=https://api.anthropic.com/v1
-
-# Google (Gemini)
-GEMINI_API_KEY=your-gemini-key
-GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
-```
-
-### Option B: Relay via yunwu.ai (Recommended for China)
-
-Use a single API key to access all providers through an OpenAI-compatible relay:
-
-```bash
-OPENAI_API_KEY=sk-your-relay-key
-OPENAI_BASE_URL=https://yunwu.ai/v1
-CLAUDE_API_KEY=sk-your-relay-key
-CLAUDE_BASE_URL=https://yunwu.ai/v1
-GEMINI_API_KEY=sk-your-relay-key
-GEMINI_BASE_URL=https://yunwu.ai/v1
-```
-
-### Option C: OpenRouter
-
-```bash
-OPENAI_API_KEY=sk-or-your-openrouter-key
-OPENAI_BASE_URL=https://openrouter.ai/api/v1
-CLAUDE_API_KEY=sk-or-your-openrouter-key
-CLAUDE_BASE_URL=https://openrouter.ai/api/v1
-GEMINI_API_KEY=sk-or-your-openrouter-key
-GEMINI_BASE_URL=https://openrouter.ai/api/v1
-```
-
-> **Note:** ScienceClaw auto-detects OpenRouter and remaps model IDs (e.g. `claude-sonnet-4-6` → `anthropic/claude-sonnet-4.6`). No manual config changes needed.
-
-### Optional Keys
-
-These are not required but unlock additional capabilities:
-
-```bash
-# NCBI/PubMed (higher rate limits)
-NCBI_API_KEY=your-ncbi-key
-
-# Exa semantic search
-EXA_API_KEY=your-exa-key
-
-# Materials Project database
-MP_API_KEY=your-mp-key
-
-# Gemini image generation
-LLM_API_KEY=your-gemini-key
-```
-
----
-
-## Step 2: Run Setup
-
-The setup script checks prerequisites, installs the OpenClaw engine from npm, and configures your API key:
+The interactive setup handles everything: dependencies, API key, language.
 
 ```bash
 bash scripts/setup.sh
 ```
 
-What the script does:
+The setup wizard will ask for your **API Key** and **Base URL**. Choose the option that fits your situation:
 
-1. **Checks prerequisites** -- verifies Node.js >= 22 and pnpm (or npm) are installed
-2. **Installs dependencies** -- runs `pnpm install` which pulls the OpenClaw engine from npm automatically
-3. **Configures API key** -- if `.env` doesn't exist, prompts you interactively
+### Option A: DeepSeek (recommended for China — no proxy needed)
 
-Expected output:
+The simplest option for users in mainland China. DeepSeek V3 is powerful, cheap (¥1/million tokens), and works without a proxy.
+
+1. Sign up at [platform.deepseek.com](https://platform.deepseek.com/)
+2. Create an API key in the console
+3. When setup asks:
 
 ```
-  ScienceClaw Setup
-  =================================
+API Key: sk-your-deepseek-key
+Base URL: https://api.deepseek.com/v1
+```
 
-  [1/3] Checking prerequisites...
-    Node.js v22.12.0, pnpm 9.15.4
+### Option B: yunwu.ai Relay (access all models from China)
 
-  [2/3] Installing dependencies...
-    Done.
+A single key gives you access to Claude, GPT-4o, Gemini, and more through a relay that works in China.
 
-  [3/3] API Key...
-    .env exists. Skipping.
+1. Sign up at [yunwu.ai](https://yunwu.ai/)
+2. When setup asks:
 
-  =================================
-  Setup complete!
+```
+API Key: sk-your-relay-key
+Base URL: https://yunwu.ai/v1
+```
 
-    ./scienceclaw run            # Start gateway + open TUI
-    ./scienceclaw ask "query"    # One-shot mode
-    ./scienceclaw stop           # Stop background gateway
+### Option C: OpenRouter (300+ models, one key)
+
+Access to hundreds of models including free ones. Works best outside China.
+
+1. Sign up at [openrouter.ai](https://openrouter.ai/)
+2. When setup asks:
+
+```
+API Key: sk-or-your-openrouter-key
+Base URL: https://openrouter.ai/api/v1
+```
+
+> **Important:** Free-tier models (with `:free` suffix) on OpenRouter are unstable — they may be rate-limited, region-blocked, or removed without notice. Paid models are much more reliable.
+
+### Option D: Direct API Access
+
+Use official provider endpoints directly. Requires overseas network access for OpenAI and Claude.
+
+```
+API Key: sk-your-openai-key
+Base URL: https://api.openai.com/v1
 ```
 
 ---
 
-## Step 3: Verify Installation
-
-### Check the CLI
+## Step 3 — Start
 
 ```bash
-./scienceclaw status
-```
-
-This reports whether the gateway is running and on which port.
-
-### Start and Test
-
-```bash
-# One-command start (starts gateway + opens TUI)
 ./scienceclaw run
 ```
 
-If everything is configured correctly, the TUI will open and connect to the gateway. You should see the ScienceClaw agent ready to accept queries.
+This starts the gateway and opens the terminal UI. You should see the ScienceClaw agent ready for questions.
 
-### Health Check
+### Verify It Works
 
-Once in the TUI, try a simple query to verify all systems are working:
+Try a simple query in the TUI:
 
 ```
 Search for recent reviews on CRISPR base editing
 ```
 
-The agent should:
-1. Query PubMed and/or OpenAlex
-2. Return real papers with titles, authors, and years
-3. Provide a brief synthesis
-
-If this works, your installation is complete.
+The agent should return real papers with titles, authors, and years. If this works, you're all set.
 
 ---
 
-## Troubleshooting Installation
+## Useful Commands
+
+| Command | What it does |
+|---------|-------------|
+| `./scienceclaw run` | Start gateway + open terminal UI |
+| `./scienceclaw models` | Check which models work (diagnose 404/403 errors) |
+| `./scienceclaw doctor` | Full system health check |
+| `./scienceclaw status` | Check if the gateway is running |
+| `./scienceclaw stop` | Stop the gateway |
+| `./scienceclaw ask "question"` | One-shot mode (no TUI) |
+| `./scienceclaw help` | See all commands |
+
+---
+
+## Troubleshooting
+
+### Model errors (404 / 403 / 429)
+
+If you see errors like "No endpoints found" or "not available in your region":
+
+```bash
+# Check which models are working
+./scienceclaw models
+```
+
+This command tests every configured model and tells you which ones work. Follow its recommendations.
+
+**Common causes:**
+- **404** — The model was removed from the provider. Switch to another model.
+- **403** — Region-blocked. Use DeepSeek or yunwu.ai relay instead.
+- **429** — Too many people using the free model. Wait or switch to a paid model.
+- **402** — Account balance depleted. Top up or switch to a free model.
+
+**Quick fix:** Use `/model` inside the TUI to switch to a working model.
 
 ### "OpenClaw engine not found"
 
-Run setup again to install dependencies:
-
 ```bash
-bash scripts/setup.sh
+bash scripts/setup.sh    # Re-run setup to install dependencies
 ```
 
-### "Node.js >= 22 required"
-
-Upgrade Node.js:
+### Gateway won't start
 
 ```bash
-nvm install 22 && nvm use 22
-# or
-brew upgrade node
+# Check what's wrong
+./scienceclaw doctor
+
+# Check the log
+tail -20 ~/.scienceclaw/gateway.log
+
+# Kill a stuck process and restart
+./scienceclaw stop && ./scienceclaw run
 ```
 
-### "pnpm not found"
+### API key doesn't work
 
 ```bash
-npm install -g pnpm
+# Run the built-in diagnostics
+./scienceclaw doctor
+
+# Or test manually
+source .env
+curl -s "$OPENAI_BASE_URL/models" -H "Authorization: Bearer $OPENAI_API_KEY" | head -5
 ```
 
-### Gateway fails to start
+---
 
-Check the log file:
+## Adding Channels (Optional)
+
+Connect ScienceClaw to your favorite messaging platform:
 
 ```bash
-cat /tmp/scienceclaw-gateway.log
+./scienceclaw add telegram   # Easiest — just need a bot token from @BotFather
+./scienceclaw add discord
+./scienceclaw add slack
+./scienceclaw add whatsapp
+./scienceclaw add feishu     # 飞书
+./scienceclaw add wechat     # 企业微信
+./scienceclaw channels       # See what's configured
 ```
-
-Common causes:
-- Port 18789 already in use (another instance or different service)
-- Missing or invalid API key in `.env`
-
-### API key errors
-
-Verify your key works by testing directly:
-
-```bash
-curl -s https://yunwu.ai/v1/models \
-  -H "Authorization: Bearer sk-your-key" | head -20
-```
-
-If this returns a list of models, your key is valid.
 
 ---
 
 ## Next Steps
 
-- [Quickstart Guide](quickstart.md) -- ask your first research question in 5 minutes
-- [Configuration Reference](configuration.md) -- customize models, skills, and gateway settings
-- [Skills Guide](../guides/skills.md) -- explore 264 domain-specific skills
+- [Quickstart Guide](quickstart.md) — Ask your first research question
+- [Configuration Reference](configuration.md) — Customize models, skills, and settings
+- [Skills Guide](../guides/skills.md) — Explore 264 domain-specific capabilities
+- [Troubleshooting](../guides/troubleshooting.md) — Common issues and solutions

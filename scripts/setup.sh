@@ -58,7 +58,8 @@ _m() {
       deps_fail)      echo "    ❌ 安装失败，请检查网络后重试" ;;
       apikey_exists)  echo "    .env 已存在且包含 API key，跳过。" ;;
       apikey_prompt)  echo "    ScienceClaw 需要一个 LLM API key 来驱动 AI 能力。" ;;
-      apikey_options) echo "    (支持 OpenAI / Anthropic / Google，或中转服务如 yunwu.ai)" ;;
+      apikey_options) echo "    支持: OpenAI / Claude / Gemini / DeepSeek，或中转 yunwu.ai / OpenRouter" ;;
+      apikey_provider) echo "    推荐: 国内用户选 DeepSeek (https://platform.deepseek.com/) 无需代理" ;;
       apikey_input)   printf "    API Key: " ;;
       apikey_baseurl) printf "    Base URL [https://yunwu.ai/v1]: " ;;
       apikey_saved)   echo "    ✅ 已保存 (gateway token 已自动生成)" ;;
@@ -127,7 +128,8 @@ _m() {
       deps_fail)      echo "    ❌ Install failed. Check your network and try again." ;;
       apikey_exists)  echo "    .env exists with API key. Skipping." ;;
       apikey_prompt)  echo "    ScienceClaw needs an LLM API key to power AI capabilities." ;;
-      apikey_options) echo "    (OpenAI, Anthropic, Google, or a relay like yunwu.ai)" ;;
+      apikey_options) echo "    Supports: OpenAI / Claude / Gemini / DeepSeek, or relay (yunwu.ai / OpenRouter)" ;;
+      apikey_provider) echo "    Tip: DeepSeek (https://platform.deepseek.com/) is affordable and works in China" ;;
       apikey_input)   printf "    API Key: " ;;
       apikey_baseurl) printf "    Base URL [https://yunwu.ai/v1]: " ;;
       apikey_saved)   echo "    ✅ Saved (gateway token auto-generated)" ;;
@@ -242,6 +244,7 @@ else
   echo ""
   _m apikey_prompt
   _m apikey_options
+  _m apikey_provider
   echo ""
 
   _m apikey_input
@@ -268,7 +271,22 @@ else
     fi
 
     GW_TOKEN=$(openssl rand -hex 24 2>/dev/null || node -e "console.log(require('crypto').randomBytes(24).toString('hex'))" 2>/dev/null || echo "sc-$(date +%s)-$$")
-    cat > "$ENV_FILE" << EOF
+
+    local is_deepseek=false
+    if echo "$BASE_URL" | grep -qi "deepseek"; then
+      is_deepseek=true
+    fi
+
+    if $is_deepseek; then
+      cat > "$ENV_FILE" << EOF
+DEEPSEEK_API_KEY=$API_KEY
+DEEPSEEK_BASE_URL=$BASE_URL
+
+GATEWAY_AUTH_TOKEN=$GW_TOKEN
+SCIENCECLAW_LANG=$LANG
+EOF
+    else
+      cat > "$ENV_FILE" << EOF
 OPENAI_API_KEY=$API_KEY
 OPENAI_BASE_URL=$BASE_URL
 CLAUDE_API_KEY=$API_KEY
@@ -279,6 +297,7 @@ GEMINI_BASE_URL=$BASE_URL
 GATEWAY_AUTH_TOKEN=$GW_TOKEN
 SCIENCECLAW_LANG=$LANG
 EOF
+    fi
     chmod 600 "$ENV_FILE"
     _m apikey_saved
   else

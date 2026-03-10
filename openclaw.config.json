@@ -50,6 +50,21 @@
             "name": "Gemini 2.5 Pro"
           }
         ]
+      },
+      "deepseek": {
+        "baseUrl": "${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}",
+        "apiKey": "${DEEPSEEK_API_KEY}",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "deepseek-chat",
+            "name": "DeepSeek V3"
+          },
+          {
+            "id": "deepseek-reasoner",
+            "name": "DeepSeek R1"
+          }
+        ]
       }
     }
   },
@@ -58,6 +73,7 @@
       "model": {
         "primary": "claude/claude-sonnet-4-6",
         "fallbacks": [
+          "deepseek/deepseek-chat",
           "gemini/gemini-2.5-pro",
           "openai/gpt-4o"
         ]
