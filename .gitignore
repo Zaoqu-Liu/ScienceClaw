@@ -12,3 +12,8 @@ __pycache__/
 /tmp/
 openclaw.config.local.json
 openclaw.config.json.bak*
+
+# Private skills (not for public distribution)
+skills/pumc-create-docx/
+skills/pumc-thesis-review/
+skills/pumc-thesis-writing/

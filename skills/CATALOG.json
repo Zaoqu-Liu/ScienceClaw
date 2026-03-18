@@ -858,24 +858,6 @@
     "file": "skills/pufferlib/SKILL.md"
   },
   {
-    "name": "pumc-create-docx",
-    "title": "Markdown 转协和博士论文 DOCX",
-    "description": "将markdown论文稿转换为符合北京协和医学院2025版博士学位论文格式规范的docx文件。当用户提到转docx、生成docx、导出Word、md转Word、格式化论文、create docx时触发。所有字体字号行距边距均严格对标协和官方规范。",
-    "file": "skills/pumc-create-docx/SKILL.md"
-  },
-  {
-    "name": "pumc-thesis-review",
-    "title": "协和论文审核与修改",
-    "description": "审核并修改已写好的协和医学院博士论文内容，检查格式规范、AI写作痕迹、学术表达质量，然后直接修改原文。当用户提到审核论文、检查论文、review论文、查AI味、去AI味、降AI率、论文审稿、帮我看看、检查格式、帮我改改时触发。基于2025版协和官方写作规范。",
-    "file": "skills/pumc-thesis-review/SKILL.md"
-  },
-  {
-    "name": "pumc-thesis-writing",
-    "title": "协和医学院博士论文写作规范",
-    "description": "按照北京协和医学院（PUMC）博士学位论文的严格格式规范撰写论文内容。当用户提到协和论文、协和格式、写论文、写前言、写结果、写讨论、写结论、去AI味、降AI率、PUMC thesis、协和参考论文、部分制论文时触发。基于2025版协和官方写作规范和19篇协和参考论文的深度分析提炼而成。",
-    "file": "skills/pumc-thesis-writing/SKILL.md"
-  },
-  {
     "name": "pydeseq2",
     "title": "PyDESeq2",
     "description": "Differential gene expression analysis (Python DESeq2). Identify DE genes from bulk RNA-seq counts, Wald tests, FDR correction, volcano/MA plots, for RNA-seq analysis.",

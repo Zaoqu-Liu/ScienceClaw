@@ -147,9 +147,6 @@
 | [pubmed-database](pubmed-database/SKILL.md) | Direct REST API access to PubMed. Advanced Boolean/MeSH queries, E-utilities API... |
 | [pubmed-search](pubmed-search/SKILL.md) | Search PubMed biomedical literature with natural language queries powered by Val... |
 | [pufferlib](pufferlib/SKILL.md) | High-performance reinforcement learning framework optimized for speed and scale.... |
-| [pumc-create-docx](pumc-create-docx/SKILL.md) | 将markdown论文稿转换为符合北京协和医学院2025版博士学位论文格式规范的docx文件。当用户提到转docx、生成docx、导出Word、md转Word、... |
-| [pumc-thesis-review](pumc-thesis-review/SKILL.md) | 审核并修改已写好的协和医学院博士论文内容，检查格式规范、AI写作痕迹、学术表达质量，然后直接修改原文。当用户提到审核论文、检查论文、review论文、查AI味、... |
-| [pumc-thesis-writing](pumc-thesis-writing/SKILL.md) | 按照北京协和医学院（PUMC）博士学位论文的严格格式规范撰写论文内容。当用户提到协和论文、协和格式、写论文、写前言、写结果、写讨论、写结论、去AI味、降AI率、... |
 | [pydeseq2](pydeseq2/SKILL.md) | Differential gene expression analysis (Python DESeq2). Identify DE genes from bu... |
 | [pydicom](pydicom/SKILL.md) | Python library for working with DICOM (Digital Imaging and Communications in Med... |
 | [pyhealth](pyhealth/SKILL.md) | Comprehensive healthcare AI toolkit for developing, testing, and deploying machi... |
