@@ -1594,5 +1594,59 @@
     "title": "Research Alerts — 文献监控",
     "description": "Monitor research topics and alert on new publications. Triggers: /watch, 监控, 关注课题, 有新文献告诉我, /watches, /unwatch. Stores watch configs and checks PubMed for new papers at session start.",
     "file": "skills/research-alerts/SKILL.md"
+  },
+  {
+    "name": "evolving-memory",
+    "title": "Evolving Memory System — 进化记忆",
+    "description": "Learn from every research session with four memory types: findings, ideation (research direction viability), strategy (effective analysis approaches), and pitfalls (errors and fixes). Recall relevant experience before recipe execution, extract lessons after completion. Triggers: /recall, /lessons, /memory stats, or automatically during recipe execution.",
+    "file": "skills/evolving-memory/SKILL.md"
+  },
+  {
+    "name": "asta-corpus-search",
+    "title": "Asta Scientific Corpus — 225M 论文语料搜索",
+    "description": "Search Allen AI's Asta Scientific Corpus (225M+ papers, 12M+ full-text, 2.4B+ citations) via MCP endpoint. Paragraph-level semantic search across full-text publications, citation graph traversal, author analysis. Use as Channel 4 alongside PubMed/OpenAlex/Semantic Scholar. Requires ASTA_API_KEY.",
+    "file": "skills/asta-corpus-search/SKILL.md"
+  },
+  {
+    "name": "svg-scientific-figures",
+    "title": "SVG Scientific Figures — 可编辑矢量科学图表",
+    "description": "Generate editable SVG scientific illustrations (mechanism diagrams, signaling pathways, workflow figures) with a Review-Refine loop. Outputs SVG compatible with draw.io/Illustrator/PowerPoint plus PNG renders. Complements Gemini PNG generation for cases requiring precise editability. Inspired by AutoFigure (ICLR 2026).",
+    "file": "skills/svg-scientific-figures/SKILL.md"
+  },
+  {
+    "name": "manuscript-review-revise",
+    "title": "Manuscript Review & Revision — 论文审修系统",
+    "description": "AI-powered manuscript review and revision using ScholarEval 8-dimension rubric plus citation-predictive heuristics. Evaluates, generates targeted revision plan, executes revisions preserving core claims, re-scores with before/after comparison. Triggers: /review, 审稿, 修改论文, 润色, review manuscript. Inspired by APRES (ICLR 2026).",
+    "file": "skills/manuscript-review-revise/SKILL.md"
+  },
+  {
+    "name": "therapeutic-reasoning-chain",
+    "title": "Therapeutic Reasoning Chain — 治疗推理链",
+    "description": "Multi-step therapeutic reasoning chaining ToolUniverse tool calls with clinical logic. Analyzes drug interactions, contraindications, and personalized treatment strategies through structured reasoning: Parse → Profile → Interact → Guideline → Personalize → Synthesize. Inspired by TxAgent (Harvard MIMS, 92.1% accuracy).",
+    "file": "skills/therapeutic-reasoning-chain/SKILL.md"
+  },
+  {
+    "name": "drug-repurposing",
+    "title": "Drug Repurposing Pipeline — 药物重定位",
+    "description": "Systematic drug repurposing analysis: drug profile, target network analysis, clinical evidence mining (including failed trials), patent landscape, safety profile with dual-use signal detection, ranked candidate scoring. Triggers: 老药新用, drug repurposing, 新适应症, repurpose. Inspired by NovusAI.",
+    "file": "skills/drug-repurposing/SKILL.md"
+  },
+  {
+    "name": "figure-pipeline",
+    "title": "Figure Pipeline — 五步图表管线",
+    "description": "Five-step publication figure generation: Retrieve reference figures → Plan composition → Apply journal styling → Visualize with code → Critique and refine. For multi-panel composite figures and journal-specific formatting. Inspired by PaperVizAgent (Google Research).",
+    "file": "skills/figure-pipeline/SKILL.md"
+  },
+  {
+    "name": "browser-automation",
+    "title": "Browser Automation — 浏览器自动化数据采集",
+    "description": "Access scientific databases lacking REST APIs via browser-use framework (81k+ GitHub stars). Vision-based LLM browser automation for GEPIA2, GeneCards, COSMIC, TIMER2.0, and other web-only databases. Fallback when curl/API access fails. Requires pip install browser-use.",
+    "file": "skills/browser-automation/SKILL.md"
+  },
+  {
+    "name": "molecular-dynamics",
+    "title": "Molecular Dynamics Simulation — 分子动力学模拟",
+    "description": "Autonomous MD simulation pipeline: structure retrieval, system preparation, minimization, equilibration, production, trajectory analysis (RMSD, RMSF, Rg, H-bonds, binding free energy). Self-correcting with error detection and retry. Requires OpenMM. Inspired by DynaMate. Triggers: MD 模拟, molecular dynamics, binding free energy, 蛋白稳定性.",
+    "file": "skills/molecular-dynamics/SKILL.md"
   }
 ]

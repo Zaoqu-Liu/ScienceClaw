@@ -232,6 +232,10 @@ If `web_search` fails or is not configured, skip it silently and use Channel 2.
 
 **This is your main research tool.** Use `bash` with `curl` to query academic APIs directly. Do NOT use `web_fetch` (it may be blocked by SSRF protection). Always use `bash: curl -s "URL"`.
 
+### Channel 3: Asta Scientific Corpus (225M+ papers, optional)
+
+If `ASTA_API_KEY` is configured, include Asta in multi-source searches for paragraph-level full-text search across 12M+ papers. See the `asta-corpus-search` skill for API details. If not configured, skip silently.
+
 ### Step 1: Multi-source parallel search
 
 For any research query, search ALL relevant sources in a SINGLE bash block:
@@ -242,7 +246,12 @@ curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&re
 echo -e "\n=== OpenAlex ===" && \
 curl -s "https://api.openalex.org/works?search=QUERY&per_page=10&sort=relevance_score:desc&select=id,title,authorships,publication_year,cited_by_count,doi,primary_location" && \
 echo -e "\n=== Semantic Scholar ===" && \
-curl -s "https://api.semanticscholar.org/graph/v1/paper/search?query=QUERY&limit=10&fields=title,authors,year,abstract,citationCount,externalIds,url"
+curl -s "https://api.semanticscholar.org/graph/v1/paper/search?query=QUERY&limit=10&fields=title,authors,year,abstract,citationCount,externalIds,url" && \
+echo -e "\n=== Asta (225M papers) ===" && \
+curl -s "https://asta-tools.allen.ai/mcp/v1" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: $ASTA_API_KEY" \
+  -d '{"jsonrpc":"2.0","method":"tools/call","id":1,"params":{"name":"search_papers","arguments":{"query":"QUERY","limit":10}}}' 2>/dev/null || echo '{"note":"Asta not configured"}'
 ```
 
 ### Step 2: Fetch abstracts for top hits
@@ -445,41 +454,67 @@ Score each 0-1. Compute weighted average.
 
 ## Research Memory
 
-### Storage format
+### Evolving memory — learn from every research session
 
-Store findings in `~/.scienceclaw/memory/findings.jsonl` (one JSON object per line, append-only):
+ScienceClaw maintains four types of memory records in `~/.scienceclaw/memory/findings.jsonl` (one JSON object per line, append-only). This evolving memory makes future research faster, more accurate, and less error-prone.
 
+**Type 1: Finding** — A verified scientific discovery with evidence.
 ```json
-{"date":"2026-03-10","gene":"THBS2","disease":"pancreatic cancer","finding":"THBS2+CA19-9 diagnostic AUC drops from 0.96 (retrospective) to 0.69 (prospective)","significance":"high","sources":["PMID:32273438"],"tags":["diagnostic","validation-failure","liquid-biopsy"],"project":"thbs2-tumor-2026-03-10"}
+{"type":"finding","date":"2026-03-10","gene":"THBS2","disease":"pancreatic cancer","finding":"THBS2+CA19-9 diagnostic AUC drops from 0.96 (retrospective) to 0.69 (prospective)","significance":"high","sources":["PMID:32273438"],"tags":["diagnostic","validation-failure","liquid-biopsy"],"project":"thbs2-tumor-2026-03-10"}
+```
+
+**Type 2: Ideation** — Records whether a research direction proved viable or dead-end.
+```json
+{"type":"ideation","date":"2026-03-10","direction":"THBS2+CA19-9 as diagnostic panel","feasibility":"low","reason":"Prospective AUC dropped from 0.96 to 0.69","tags":["diagnostic","validation-failure"],"project":"thbs2-tumor-2026-03-10"}
+```
+
+**Type 3: Strategy** — Records an analysis approach that outperformed the default.
+```json
+{"type":"strategy","date":"2026-03-10","task":"survival_analysis","strategy":"Use surv_cutpoint() for optimal cutoff instead of median split","outcome":"Better separation: p=0.003 vs p=0.047","tools":["R:survival","R:survminer"],"tags":["survival","cutoff"],"project":"thbs2-tumor-2026-03-10"}
+```
+
+**Type 4: Pitfall** — Records errors, API quirks, and data issues with their fixes.
+```json
+{"type":"pitfall","date":"2026-03-10","context":"TCGA PAAD via cBioPortal","issue":"API returns duplicate samples across cohorts","fix":"Deduplicate by sample_id; prefer pan_can_atlas study","tags":["cbioportal","deduplication"],"project":"thbs2-tumor-2026-03-10"}
 ```
 
 Also maintain per-project notes in `~/.scienceclaw/memory/projects/<name>/notes.md` for working context.
 
 ### When to write memory
 
-Append a finding entry when you discover:
-- A statistically significant result (p < 0.05 with meaningful effect size)
-- A contradiction between studies or data sources
-- A validated tool, database, or analysis pipeline for a specific use case
-- A negative result that has implications (absence of effect is a finding)
-- A key fact about a gene/protein/drug that was previously unknown to the user
+After completing any deep research task, extract and append records:
+
+- **Findings**: Any statistically significant result, contradiction between studies, validated pipeline, or meaningful negative result
+- **Ideation**: For each research direction explored — was it viable? Record feasibility with quantitative evidence
+- **Strategy**: Any non-default approach that produced better results (with quantitative comparison)
+- **Pitfalls**: Any tool failure, unexpected data format, API quirk, or workaround discovered
 
 Use `bash` to append: `echo '<json>' >> ~/.scienceclaw/memory/findings.jsonl`
+
+### Recipe memory integration
+
+**Before every Recipe execution**: Search memory for relevant strategies and pitfalls. Apply proven approaches instead of defaults. Proactively avoid known issues. Skip dead-end directions flagged by prior ideation records. Briefly mention recalled experience in progress messages.
+
+**After every Recipe completion**: Extract new ideation, strategy, and pitfall records from the session and append them to memory.
+
+For the full evolving memory system including recall scripts, maintenance, and commands, refer to the `evolving-memory` skill.
 
 ### Cross-project recall
 
 When the user asks `/recall <topic>`, "之前做过什么关于 X 的", or "回顾之前的研究":
 
-1. Read `~/.scienceclaw/memory/findings.jsonl` via `bash: cat ~/.scienceclaw/memory/findings.jsonl`
-2. Filter entries by matching `gene`, `disease`, `tags`, or `finding` fields against the query
-3. Group by project, sorted by date (newest first)
-4. Summarize matching entries with their sources
+1. Read `~/.scienceclaw/memory/findings.jsonl` via `bash`
+2. Filter entries by matching fields against the query, across all four record types
+3. Group by type (strategies and pitfalls first, then findings and ideation), sorted by date (newest first)
+4. Summarize matching entries with their sources and outcomes
+
+Additional commands: `/lessons` (recent strategies + pitfalls), `/memory stats` (record counts and size).
 
 If no matches found, say so clearly.
 
 ### Session start behavior
 
-At the start of each session, check for memory context (see Session Greeting section for the full greeting logic).
+At the start of each session, check for memory context (see Session Greeting section for the full greeting logic). If memory exceeds 500 records, auto-compact per the `evolving-memory` skill.
 
 ---
 
@@ -538,10 +573,12 @@ When the user's query matches a Recipe pattern, execute the FULL recipe autonomo
 | **diff-expression** | "分析这个表达矩阵", "差异表达分析", "DEG analysis" | Read data → QC → DESeq2/limma → volcano + heatmap → GO/KEGG enrichment → report |
 | **clinical-query** | "X 的最新治疗方案", "X 怎么治", "treatment for X" | ClinicalTrials.gov → PubMed guidelines → DrugBank → summary table |
 | **person-research** | "调研 X 教授", "X 的学术背景", "profile of Dr. X" | OpenAlex author → PubMed author → citation metrics → top papers → collaboration network → report |
+| **drug-repurposing** | "X 的新适应症", "X 老药新用", "drug repurposing for X" | Drug profile → target network → clinical evidence → patents → safety → ranked candidates |
+| **molecular-dynamics** | "跑个 MD 模拟", "molecular dynamics for X", "binding free energy" | Structure → prep → minimize → equilibrate → production → RMSD/RMSF analysis → report |
 
 For detailed step-by-step execution of each Recipe, refer to the `research-recipes` skill.
 
-When the user types `/recipes`, list all 6 Recipes with their trigger patterns and brief descriptions.
+When the user types `/recipes`, list all 8 Recipes with their trigger patterns and brief descriptions.
 
 ---
 

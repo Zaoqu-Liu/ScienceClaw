@@ -1,6 +1,6 @@
 ---
 name: research-recipes
-description: Pre-built research workflow templates that execute complete multi-step analyses from a single user prompt. Triggers on gene analysis, target validation, literature review, differential expression, clinical queries, or researcher profiling. Use when the user's query matches a Recipe pattern defined in SCIENCE.md.
+description: Pre-built research workflow templates that execute complete multi-step analyses from a single user prompt. Triggers on gene analysis, target validation, literature review, differential expression, clinical queries, researcher profiling, drug repurposing, or molecular dynamics simulation. Use when the user's query matches a Recipe pattern defined in SCIENCE.md.
 ---
 
 # Research Recipes
@@ -15,6 +15,8 @@ Complete research workflows that ScienceClaw executes autonomously. Each Recipe 
 - User provides expression data for analysis → diff-expression
 - User asks about treatment options → clinical-query
 - User asks to profile a researcher → person-research
+- User asks "X 的新适应症" or "drug repurposing" → drug-repurposing
+- User asks "跑个 MD 模拟" or "molecular dynamics" → molecular-dynamics
 
 ## Recipe Execution Rules
 
@@ -89,6 +91,10 @@ Compile all findings into `reports/GENE_DISEASE_report.md`:
 
 Generate `METHODS.md`. List all files. Offer export options. Suggest follow-ups.
 
+### Output
+
+`reports/GENE_DISEASE_report.md` + `METHODS.md` + `figures/` (boxplot, KM curve, enrichment dot plot)
+
 ---
 
 ## Recipe 2: target-validation
@@ -112,24 +118,68 @@ Generate `METHODS.md`. List all files. Offer export options. Suggest follow-ups.
 
 ---
 
-## Recipe 3: literature-review
+## Recipe 3: literature-review (Parallel Chapter Architecture)
 
 **Trigger**: "综述 X", "survey X", "X 的研究进展", "review the literature on X"
 
+### Overview
+
+Uses an **outline-first, chapter-by-chapter** deep research approach inspired by DeepResearchAgent. Instead of a linear pipeline, the review is structured as: broad scan → outline → per-chapter deep dive → cross-chapter synthesis.
+
 ### Steps
 
-1. **Broad search** — PubMed (50 results) + OpenAlex (30) + Semantic Scholar (30) + bioRxiv/arXiv if relevant
-2. **Deduplication** — By DOI > PMID > title
-3. **Filtering** — Remove low-relevance papers, prioritize reviews and high-citation originals
-4. **Abstract analysis** — Fetch and read all abstracts, categorize into themes
-5. **Full text** — Read top 5 most-cited/most-relevant papers via Jina Reader or Europe PMC
-6. **Publication trend** — Year-by-year publication count chart (matplotlib bar chart)
-7. **Structured review** — Organized by themes, with synthesis across papers
-8. **References** — GB/T 7714 format, numbered by order of appearance
+**Step 1 — Broad Scan & Outline Generation**
+
+Search all sources (PubMed 50 + OpenAlex 30 + Semantic Scholar 30 + Asta 15 + bioRxiv/arXiv if relevant). Deduplicate by DOI > PMID > title. Read all abstracts. Cluster papers into 4–6 themes. Generate a structured outline:
+
+```markdown
+## Outline: [TOPIC] Literature Review
+
+1. Introduction and Historical Context
+2. [Theme A]: [Description] (N papers)
+3. [Theme B]: [Description] (N papers)
+4. [Theme C]: [Description] (N papers)
+5. Current Challenges and Controversies
+6. Future Directions and Emerging Opportunities
+```
+
+Report: "广搜完成：PubMed N 篇，OpenAlex N 篇，S2 N 篇，Asta N 篇。去重后 N 篇。聚类为 N 个主题，生成了 outline。"
+
+**Step 2 — Per-Chapter Deep Dive**
+
+For each chapter in the outline, independently:
+- Run chapter-specific keyword searches (narrower, more targeted than Step 1)
+- Trace citation chains from the most relevant papers in that theme
+- Read full text for the top 2–3 papers per chapter (via Jina Reader or Europe PMC)
+- Extract key findings, methodological approaches, contradictions, and gaps
+- Write the chapter section progressively to the report file
+
+Report per chapter: "第 N 章「[Theme]」深度搜索完成：新增 N 篇文献，阅读 N 篇全文。"
+
+**Step 3 — Cross-Chapter Synthesis**
+
+After all chapters are written:
+- Check for contradictions or redundancies between chapters
+- Ensure consistent citation numbering across the entire review
+- Write Executive Summary (key findings in 5–8 bullets with numbers)
+- Write "Research Gaps and Open Questions" section
+- Write "Future Directions" section grounded in specific data gaps identified
+
+**Step 4 — Publication Trend & Figures**
+
+- Year-by-year publication count chart (matplotlib bar chart)
+- Optional: citation network visualization for top papers
+- Optional: keyword co-occurrence heatmap
+
+**Step 5 — References & Finalization**
+
+- GB/T 7714 format, numbered by order of appearance
+- Verify every citation against tool results (zero fabrication)
+- Generate METHODS.md
 
 ### Output
 
-`reports/literature_review_TOPIC.md` (structured review) + `figures/publication_trend_TOPIC.png`
+`reports/literature_review_TOPIC.md` (structured review, 4000–8000 words) + `figures/publication_trend_TOPIC.png` + `METHODS.md`
 
 ---
 
@@ -185,3 +235,48 @@ Direct response in chat (this is a quick-to-medium task). If results are extensi
 ### Output
 
 `reports/researcher_profile_NAME.md`
+
+---
+
+## Recipe 7: drug-repurposing
+
+**Trigger**: "帮我找 X 的新适应症", "X 能不能重定位到 Y", "drug repurposing for X", "X 的老药新用", "repurpose X"
+
+### Steps
+
+1. **Drug profile** — DrugBank (approved indications, mechanism, targets) + ChEMBL (bioactivity data, off-target hits) + PubChem (chemical properties, similar compounds)
+2. **Target network analysis** — STRING/OpenTargets: map drug targets to PPI network. Identify "unexpected targets" → map to new diseases via OpenTargets disease associations
+3. **Clinical evidence mining** — ClinicalTrials.gov: ALL trials for this drug (including failed/terminated ones for off-label indications) + PubMed: case reports, retrospective studies, off-label use reports
+4. **Patent landscape** — web_search: "[drug] patent expiry", "[drug] generic availability". Patent expiry = higher repurposing viability
+5. **Safety profile** — OpenFDA adverse event reports. Note: some "adverse effects" may indicate therapeutic potential (e.g., metformin weight loss → obesity, metformin anti-cancer signals)
+6. **Repurposing candidate ranking** — Score each candidate indication by: target evidence (0-30) × clinical evidence (0-30) × safety (0-20) × patent status (0-20). Output ranked table with evidence summaries
+
+For detailed pipeline implementation, refer to the `drug-repurposing` skill.
+
+### Output
+
+`reports/drug_repurposing_DRUGNAME.md` (ranked candidates with evidence) + `figures/target_network_DRUGNAME.png`
+
+---
+
+## Recipe 8: molecular-dynamics
+
+**Trigger**: "跑个分子动力学模拟", "molecular dynamics for X", "binding free energy of X", "蛋白配体模拟", "MD simulation"
+
+### Steps
+
+1. **Structure retrieval** — Fetch from PDB or AlphaFold by protein ID/gene name
+2. **System preparation** — Force field assignment, solvation, ionization via OpenMM/AmberTools
+3. **Energy minimization** — Minimize with self-correction (verify potential energy convergence)
+4. **Equilibration** — NVT then NPT ensemble equilibration
+5. **Production run** — Record trajectory (length depends on system size, default 10 ns)
+6. **Analysis** — RMSD, RMSF, hydrogen bonds, radius of gyration, binding free energy (MM/PBSA if ligand present)
+7. **Report** — Figures + structural insights + stability assessment
+
+**Note**: Requires OpenMM or GROMACS to be installed. Check via `scienceclaw doctor`. If not available, report and suggest installation.
+
+For detailed pipeline implementation, refer to the `molecular-dynamics` skill.
+
+### Output
+
+`reports/md_simulation_PROTEIN.md` + `figures/rmsd_*.png` + `figures/rmsf_*.png` + `data/trajectory_*.dcd`
