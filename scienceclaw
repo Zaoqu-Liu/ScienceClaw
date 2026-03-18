@@ -660,6 +660,7 @@ show_help() {
   _msg help_models
   _msg help_doctor
   _msg help_skills
+  _msg help_recipes
   _msg help_outputs
   _msg help_logs
   _msg help_ask
@@ -1308,7 +1309,11 @@ run_models() {
   fi
 
   if [ ! -f "$RUNTIME_CONFIG" ]; then
-    _msg doc_fail "$(_msg_str models_no_config)"
+    if [ "${SCIENCECLAW_LANG:-zh}" = "zh" ]; then
+      _msg doc_fail "没有运行时配置，请先运行: ./scienceclaw setup"
+    else
+      _msg doc_fail "Runtime config not found. Run: ./scienceclaw setup"
+    fi
     echo ""
     return 1
   fi
@@ -1621,6 +1626,18 @@ case "${1:-}" in
   run)
     ensure_gateway || exit 1
     _preflight_model_check
+    if [ ! -f "$WORKSPACE/.scienceclaw-initialized" ]; then
+      mkdir -p "$WORKSPACE"
+      echo ""
+      _msg first_run_welcome
+      _msg first_run_hint
+      _msg first_run_ex1
+      _msg first_run_ex2
+      _msg first_run_ex3
+      echo ""
+      _msg first_run_more
+      touch "$WORKSPACE/.scienceclaw-initialized"
+    fi
     echo ""
     export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
     oc tui
@@ -1718,13 +1735,41 @@ case "${1:-}" in
     show_help
     ;;
 
+  recipes)
+    echo ""
+    _msg recipes_title
+    echo "  ════════════════════════════════════════════"
+    echo ""
+    _msg recipes_desc
+    echo ""
+    _msg recipes_gene
+    _msg recipes_target
+    _msg recipes_lit
+    _msg recipes_deg
+    _msg recipes_clinical
+    _msg recipes_person
+    echo ""
+    _msg recipes_usage
+    _msg recipes_ex1
+    _msg recipes_ex2
+    echo ""
+    ;;
+
   ask)
     shift
+    clipboard=false
+    if [ "${1:-}" = "--clipboard" ] || [ "${1:-}" = "-c" ]; then
+      clipboard=true; shift
+    fi
     _require_engine
     _build_runtime_config || exit 1
     ensure_gateway || exit 1
     export OPENCLAW_CONFIG_PATH="$RUNTIME_CONFIG"
-    oc agent --message "$*"
+    if $clipboard; then
+      oc agent --agent scienceclaw --message "$*" | tee /dev/stderr | pbcopy 2>/dev/null || true
+    else
+      oc agent --agent scienceclaw --message "$*"
+    fi
     ;;
 
   *)

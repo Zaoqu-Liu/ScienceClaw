@@ -1564,5 +1564,35 @@
     "title": "ZINC Database",
     "description": "Access ZINC (230M+ purchasable compounds). Search by ZINC ID/SMILES, similarity searches, 3D-ready structures for docking, analog discovery, for virtual screening and drug discovery.",
     "file": "skills/zinc-database/SKILL.md"
+  },
+  {
+    "name": "research-recipes",
+    "title": "Research Recipes — 研究模板",
+    "description": "Pre-built research workflow templates. Triggers: gene analysis (分析 X 在 Y 中的作用), target validation (评估成药性), literature review (综述), differential expression, clinical query, researcher profiling. Each Recipe executes a complete multi-step pipeline autonomously.",
+    "file": "skills/research-recipes/SKILL.md"
+  },
+  {
+    "name": "export-docx",
+    "title": "Export to Word (.docx)",
+    "description": "Export project reports to Word format with embedded figures and references. Triggers: 导出 Word, /export word, 转 docx, export to Word.",
+    "file": "skills/export-docx/SKILL.md"
+  },
+  {
+    "name": "export-pptx",
+    "title": "Export to PowerPoint (.pptx)",
+    "description": "Export project findings to presentation slides with key findings, figures, and conclusions. Triggers: 导出 PPT, /export pptx, 做个汇报, export to PowerPoint.",
+    "file": "skills/export-pptx/SKILL.md"
+  },
+  {
+    "name": "export-latex",
+    "title": "Export to LaTeX Manuscript",
+    "description": "Export project findings to LaTeX paper draft with figures, references, and methods. Supports Nature, Cell, Lancet formats. Triggers: 导出 LaTeX, /export latex, 写论文初稿, generate manuscript.",
+    "file": "skills/export-latex/SKILL.md"
+  },
+  {
+    "name": "research-alerts",
+    "title": "Research Alerts — 文献监控",
+    "description": "Monitor research topics and alert on new publications. Triggers: /watch, 监控, 关注课题, 有新文献告诉我, /watches, /unwatch. Stores watch configs and checks PubMed for new papers at session start.",
+    "file": "skills/research-alerts/SKILL.md"
   }
 ]

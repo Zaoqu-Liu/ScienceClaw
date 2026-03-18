@@ -60,13 +60,38 @@ _msg() {
       help_dash)        echo "    dashboard           网页面板" ;;
       help_models)      echo "    models              检测模型状态（哪些能用、哪些挂了）" ;;
       help_doctor)      echo "    doctor              全面健康检查" ;;
-      help_skills)      echo "    skills              浏览专业能力（264 项）" ;;
+      help_skills)      echo "    skills              浏览专业能力（266 项）" ;;
       help_outputs)     echo "    outputs             查看输出文件" ;;
       help_logs)        echo "    logs                查看实时日志" ;;
       help_ask)         echo "    ask \"问题\"          一次性提问" ;;
       help_auto)        echo "    autostart           配置开机自启" ;;
+      help_recipes)     echo "    recipes             查看研究模板（一句话启动完整流程）" ;;
       help_supported)   echo "  支持的渠道:" ;;
       help_ch_list)     echo "    telegram  discord  slack  whatsapp  feishu  matrix  wechat" ;;
+
+      # ── Recipes ──
+      recipes_title)    echo "  研究模板 (Research Recipes)" ;;
+      recipes_desc)     echo "  一句话启动完整研究流程。ScienceClaw 会自动匹配最合适的模板：" ;;
+      recipes_gene)     echo "    gene-landscape      分析基因在疾病中的作用（文献+表达谱+生存+免疫+通路+报告）" ;;
+      recipes_target)   echo "    target-validation   评估靶点成药性（文献+互作+化合物+药物+临床+专利+报告）" ;;
+      recipes_lit)      echo "    literature-review   系统性文献综述（多源检索50+→筛选→全文→趋势→综述）" ;;
+      recipes_deg)      echo "    diff-expression     差异表达分析（QC+DESeq2+火山图+热图+GO/KEGG+报告）" ;;
+      recipes_clinical) echo "    clinical-query      临床问题快查（试验+指南+药物+汇总）" ;;
+      recipes_person)   echo "    person-research     学者画像（论文+引用+合作+代表作+报告）" ;;
+      recipes_usage)    echo "  用法示例:" ;;
+      recipes_ex1)      echo "    ./scienceclaw ask \"分析 TP53 在肝癌中的作用\"     → 自动匹配 gene-landscape" ;;
+      recipes_ex2)      echo "    ./scienceclaw ask \"综述 CRISPR 在基因治疗中的应用\" → 自动匹配 literature-review" ;;
+
+      # ── First run ──
+      first_run_welcome) echo "  🔬 欢迎使用 ScienceClaw！" ;;
+      first_run_hint)    echo "  试试输入一个研究问题，例如：" ;;
+      first_run_ex1)     echo "    \"分析 BRCA1 在乳腺癌中的作用\"" ;;
+      first_run_ex2)     echo "    \"综述 CRISPR 在基因治疗中的应用\"" ;;
+      first_run_ex3)     echo "    \"KRAS G12C 有哪些已批准的靶向药\"" ;;
+      first_run_more)    echo "  输入 /recipes 查看所有研究模板" ;;
+
+      # ── Models ──
+      models_no_config) echo "没有运行时配置，请先运行: ./scienceclaw setup" ;;
 
       # ── Doctor ──
       doc_title)        echo "  ScienceClaw 健康检查" ;;
@@ -154,13 +179,37 @@ _msg() {
       help_dash)        echo "    dashboard           Open web dashboard" ;;
       help_models)      echo "    models              Check model status (which ones work)" ;;
       help_doctor)      echo "    doctor              Full health check" ;;
-      help_skills)      echo "    skills              Browse capabilities (264 skills)" ;;
+      help_skills)      echo "    skills              Browse capabilities (266 skills)" ;;
       help_outputs)     echo "    outputs             View output files" ;;
       help_logs)        echo "    logs                Tail gateway logs" ;;
       help_ask)         echo "    ask \"query\"          One-shot query" ;;
       help_auto)        echo "    autostart           Configure auto-start on boot" ;;
+      help_recipes)     echo "    recipes             Research templates (one-liner to full workflow)" ;;
       help_supported)   echo "  Supported channels:" ;;
       help_ch_list)     echo "    telegram  discord  slack  whatsapp  feishu  matrix  wechat" ;;
+
+      # ── Recipes ──
+      recipes_title)    echo "  Research Recipes" ;;
+      recipes_desc)     echo "  One-liner triggers for full research workflows. ScienceClaw auto-matches:" ;;
+      recipes_gene)     echo "    gene-landscape      Analyze gene role in disease (lit+expression+survival+immune+pathway+report)" ;;
+      recipes_target)   echo "    target-validation   Evaluate druggability (lit+interactions+compounds+drugs+trials+patents+report)" ;;
+      recipes_lit)      echo "    literature-review   Systematic review (multi-source 50+→filter→full-text→trend→review)" ;;
+      recipes_deg)      echo "    diff-expression     Differential expression (QC+DESeq2+volcano+heatmap+GO/KEGG+report)" ;;
+      recipes_clinical) echo "    clinical-query      Clinical quick-query (trials+guidelines+drugs+summary)" ;;
+      recipes_person)   echo "    person-research     Researcher profile (papers+citations+collaborations+report)" ;;
+      recipes_usage)    echo "  Examples:" ;;
+      recipes_ex1)      echo "    ./scienceclaw ask \"investigate TP53 in liver cancer\"  → auto-matches gene-landscape" ;;
+      recipes_ex2)      echo "    ./scienceclaw ask \"survey CRISPR in gene therapy\"     → auto-matches literature-review" ;;
+
+      # ── First run ──
+      first_run_welcome) echo "  🔬 Welcome to ScienceClaw!" ;;
+      first_run_hint)    echo "  Try a research question, for example:" ;;
+      first_run_ex1)     echo "    \"Investigate BRCA1 in breast cancer\"" ;;
+      first_run_ex2)     echo "    \"Survey CRISPR applications in gene therapy\"" ;;
+      first_run_ex3)     echo "    \"What targeted drugs are approved for KRAS G12C?\"" ;;
+      first_run_more)    echo "  Type /recipes to see all research templates" ;;
+
+      models_no_config) echo "Runtime config not found. Run: ./scienceclaw setup" ;;
 
       doc_title)        echo "  ScienceClaw Health Check" ;;
       doc_ok)           echo "    ✅ ${1}" ;;

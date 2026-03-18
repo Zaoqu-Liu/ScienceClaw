@@ -9,7 +9,7 @@
 **Your AI Research Colleague**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-[![Skills](https://img.shields.io/badge/Skills-264+-orange.svg?style=for-the-badge)](#-skills)
+[![Skills](https://img.shields.io/badge/Skills-266+-orange.svg?style=for-the-badge)](#-skills)
 [![Databases](https://img.shields.io/badge/Databases-77+-green.svg?style=for-the-badge)](#-database-access)
 [![Search Sources](https://img.shields.io/badge/Search_Sources-15+-purple.svg?style=for-the-badge)](#-deep-research)
 [![Node](https://img.shields.io/badge/Node-22+-339933.svg?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -20,7 +20,7 @@
 
 ---
 
-ScienceClaw is a science research agent. It searches literature, queries databases, runs analyses, generates figures, and writes reports. Zero custom code — built entirely on [OpenClaw](https://github.com/openclaw/openclaw) with one markdown file (`SCIENCE.md`, ~200 lines) and 264 domain skills. The model does 99% of the work; the markdown teaches it how to be a scientist.
+ScienceClaw is a science research agent. It searches literature, queries databases, runs analyses, generates figures, and writes reports. Zero custom code — built entirely on [OpenClaw](https://github.com/openclaw/openclaw) with one markdown file (`SCIENCE.md`, ~600 lines) and 266 domain skills. The model does 99% of the work; the markdown teaches it how to be a scientist.
 
 ---
 
@@ -125,6 +125,54 @@ For one-shot mode, skip the TUI entirely:
 | **Generate figures** | Journal-spec palettes (NPG, Lancet, JCO, NEJM), publication-ready sizing |
 | **Write reports** | Real citations from search results, never fabricated |
 | **Review research** | 8-dimension ScholarEval rubric for systematic quality assessment |
+| **Research Recipes** | 6 pre-built workflows — gene landscape, target validation, literature review, and more |
+| **Export deliverables** | One command to Word, PowerPoint, or LaTeX from project results |
+| **Monitor literature** | `/watch` tracks topics on PubMed, alerts on new papers at session start |
+
+</div>
+
+---
+
+## Research Recipes
+
+Six pre-built research workflows that execute complete multi-step analyses from a single prompt. ScienceClaw auto-detects which Recipe matches and runs the full pipeline autonomously.
+
+<div align="center">
+
+| Recipe | Trigger Examples | What It Does |
+|--------|-----------------|-------------|
+| **gene-landscape** | "分析 TP53 在肝癌中的作用" | Literature → TCGA expression → survival → immune → pathway → report |
+| **target-validation** | "评估 EGFR 的成药性" | Literature → STRING → ChEMBL → DrugBank → trials → patents → report |
+| **literature-review** | "综述 CRISPR 在基因治疗中的应用" | Multi-source 50+ → filter → full text → trend chart → structured review |
+| **diff-expression** | "分析这个表达矩阵" | QC → DESeq2/limma → volcano + heatmap → GO/KEGG → report |
+| **clinical-query** | "NSCLC 的最新治疗方案" | ClinicalTrials → guidelines → drugs → summary table |
+| **person-research** | "调研张三教授" | OpenAlex → PubMed → citations → themes → profile report |
+
+</div>
+
+```bash
+./scienceclaw recipes                    # list all Recipes
+./scienceclaw ask "分析 TP53 在肝癌中的作用"  # auto-matches gene-landscape
+```
+
+---
+
+## New in This Release
+
+<div align="center">
+
+| Feature | Description |
+|---------|------------|
+| **Research Recipes** | 6 one-liner-to-full-workflow templates (see above) |
+| **Export to Word/PPT/LaTeX** | `/export word`, `/export pptx`, `/export latex` — generate formatted deliverables from project results |
+| **Literature Monitoring** | `/watch TOPIC` — track new publications on PubMed, alerts at session start |
+| **Research Memory** | Structured findings stored in JSONL — cross-session, cross-project recall via `/recall` |
+| **METHODS.md** | Auto-generated Methods section after deep analyses, ready for paper insertion |
+| **Smart Task Routing** | Quick tasks (single lookup) stay in chat; deep tasks get project directories |
+| **Follow-up Suggestions** | Data-driven next-step suggestions after every multi-step analysis |
+| **Session Greeting** | Context-aware greeting — returning users see recent project status + pending alerts |
+| **First-run Welcome** | Guided onboarding for new users with actionable examples |
+| **CLI `recipes` / `ask`** | `./scienceclaw recipes` to browse, `./scienceclaw ask "..."` for one-shot queries |
 
 </div>
 
@@ -168,7 +216,7 @@ ScienceClaw inherits all channel integrations from OpenClaw. Connect your prefer
 <br />
 
 ```
-ScienceClaw = OpenClaw + SCIENCE.md + 264 Skills
+ScienceClaw = OpenClaw + SCIENCE.md + 266 Skills
 ```
 
 No TypeScript. No Python servers. No MCP. No plugins. The model does the work.
@@ -179,7 +227,7 @@ No TypeScript. No Python servers. No MCP. No plugins. The model does the work.
 |-------|-----------|
 | **User** | Terminal UI, Web Dashboard, Telegram, Discord, Slack, Feishu, WeChat, WhatsApp, Matrix |
 | **Gateway** | OpenClaw gateway — routes messages, manages sessions, handles tool calls |
-| **Agent** | Single `ScienceClaw` agent powered by `SCIENCE.md` (~200 lines) + 264 domain skills |
+| **Agent** | Single `ScienceClaw` agent powered by `SCIENCE.md` (~600 lines) + 266 domain skills |
 | **Infrastructure** | `web_search`, `web_fetch`, `bash` — the three built-in OpenClaw tools that do everything |
 
 </div>
@@ -247,7 +295,7 @@ ScienceClaw searches across 15+ sources, cross-references results, and verifies 
 
 <br />
 
-264 domain skills provide detailed guidance for specific techniques. Each skill is a markdown file that teaches the model *how* to perform a particular analysis.
+266 domain skills provide detailed guidance for specific techniques. Each skill is a markdown file that teaches the model *how* to perform a particular analysis.
 
 <div align="center">
 
