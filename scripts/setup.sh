@@ -248,8 +248,8 @@ else
   echo ""
 
   _m apikey_input
-  read -s API_KEY
-  echo ""  # newline after silent read
+  read API_KEY
+  
 
   _m apikey_baseurl
   read BASE_URL
