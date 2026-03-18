@@ -6,13 +6,13 @@
 
 # ScienceClaw
 
-**Your AI Research Colleague**
+**One prompt. Complete gene analysis pipeline. Zero custom code.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-[![Skills](https://img.shields.io/badge/Skills-266+-orange.svg?style=for-the-badge)](#-skills)
+[![Skills](https://img.shields.io/badge/Domain_Skills-266-orange.svg?style=for-the-badge)](#-266-domain-skills)
 [![Databases](https://img.shields.io/badge/Databases-77+-green.svg?style=for-the-badge)](#-database-access)
 [![Search Sources](https://img.shields.io/badge/Search_Sources-15+-purple.svg?style=for-the-badge)](#-deep-research)
-[![Node](https://img.shields.io/badge/Node-22+-339933.svg?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Code](https://img.shields.io/badge/Custom_Code-0_lines-E64B35.svg?style=for-the-badge)](#architecture)
 
 **EN** | [中文](docs/i18n/README_ZH.md) | [日本語](docs/i18n/README_JA.md) | [한국어](docs/i18n/README_KO.md)
 
@@ -20,7 +20,9 @@
 
 ---
 
-ScienceClaw is a science research agent. It searches literature, queries databases, runs analyses, generates figures, and writes reports. Zero custom code — built entirely on [OpenClaw](https://github.com/openclaw/openclaw) with one markdown file (`SCIENCE.md`, ~600 lines) and 266 domain skills. The model does 99% of the work; the markdown teaches it how to be a scientist.
+ScienceClaw is a science research AI agent. Say `"分析 TP53 在肝癌中的作用"` and it autonomously searches 15+ literature sources, queries 77+ databases, runs survival analysis in R, generates publication-quality figures, and delivers a full report with real citations — no fabrication, no hallucination.
+
+Zero custom code. Built entirely on [OpenClaw](https://github.com/openclaw/openclaw) with one markdown file ([`SCIENCE.md`](SCIENCE.md), ~600 lines) and 266 domain skills. The model does 99% of the work; the markdown teaches it how to be a scientist.
 
 ---
 
@@ -58,58 +60,61 @@ ScienceClaw conducted a systematic literature search across PubMed, Semantic Sch
 
 ---
 
+### Case 3 — Research Recipe: One-liner to full pipeline
+
+> **Prompt:** *"分析 TP53 在肝癌中的作用"*
+
+ScienceClaw auto-matches the **gene-landscape** Recipe and executes a 6-step pipeline autonomously: literature search → TCGA expression profiling → survival analysis → immune infiltration → pathway enrichment → structured report with METHODS.md.
+
+<!-- TODO: add GIF/screenshot of Recipe execution -->
+
+All output files are saved to `~/.scienceclaw/workspace/projects/tp53-liver-cancer-<date>/` and can be exported with one command: `/export word`, `/export pptx`, or `/export latex`.
+
+[Browse all 6 Research Recipes &rarr;](#research-recipes)
+
+---
+
 ## Quick Start
 
-### Prerequisites
+```bash
+git clone https://github.com/Zaoqu-Liu/ScienceClaw.git && cd ScienceClaw
+bash scripts/setup.sh       # installs deps, configures API key (interactive)
+./scienceclaw run            # starts gateway + opens TUI — done
+```
 
-<div align="center">
+> **China users:** setup will ask for an API key. Use [DeepSeek](https://platform.deepseek.com/) — direct access, no proxy, ¥1/M tokens. Or use [OpenRouter](https://openrouter.ai/) as a relay for all providers.
+
+<details>
+<summary><strong>Prerequisites</strong></summary>
 
 | Requirement | Version | Notes |
 |-------------|---------|-------|
-| Node.js | >= 22 | Required |
-| pnpm | Latest | Required — `npm install -g pnpm` |
+| Node.js | >= 22 | [nodejs.org](https://nodejs.org/) |
 | Python | >= 3.10 | For code execution (R, Julia optional) |
-| Docker | Latest | Optional — for sandboxed code execution |
+| Docker | Latest | Optional — sandboxed execution |
 
-</div>
+</details>
 
-### Step 1 — Clone and setup
-
-```bash
-git clone https://github.com/Zaoqu-Liu/ScienceClaw.git
-cd ScienceClaw
-bash scripts/setup.sh       # installs everything, configures API key + channels
-```
-
-> **China users:** When setup asks for API key, use [DeepSeek](https://platform.deepseek.com/) (no proxy needed, very affordable) or [OpenRouter](https://openrouter.ai/) relay. See the [Installation Guide](docs/getting-started/installation.md) for details.
-
-### Step 2 — Run
+<details>
+<summary><strong>Troubleshooting</strong></summary>
 
 ```bash
-./scienceclaw run            # auto-starts gateway + opens TUI
-```
-
-That's it. Two commands.
-
-### Having model issues?
-
-```bash
-./scienceclaw models         # check which models work, diagnose 404/403 errors
+./scienceclaw models         # which models work? diagnose 404/403/429
 ./scienceclaw doctor         # full system health check
 ```
 
-### Add a messaging channel (optional)
+</details>
+
+<details>
+<summary><strong>One-shot mode & channels</strong></summary>
 
 ```bash
-./scienceclaw add telegram   # or discord, slack, whatsapp, feishu, matrix, wechat
-./scienceclaw channels       # see what's configured
+./scienceclaw ask "分析 BRCA1 在乳腺癌中的作用"   # one-shot, no TUI
+./scienceclaw add telegram                         # or discord, slack, whatsapp, feishu, wechat
+./scienceclaw channels                             # list configured channels
 ```
 
-For one-shot mode, skip the TUI entirely:
-
-```bash
-./scienceclaw ask "Search TREM2 in Alzheimer's disease and summarize recent findings"
-```
+</details>
 
 ---
 
@@ -216,21 +221,24 @@ ScienceClaw inherits all channel integrations from OpenClaw. Connect your prefer
 <br />
 
 ```
-ScienceClaw = OpenClaw + SCIENCE.md + 266 Skills
+ScienceClaw = OpenClaw engine + SCIENCE.md (~600 lines) + 266 Skills (markdown)
+            = 0 lines of custom code
 ```
 
-No TypeScript. No Python servers. No MCP. No plugins. The model does the work.
+No TypeScript. No Python servers. No MCP. No plugins. No middleware. The `scienceclaw` bash wrapper (~130 lines) manages the gateway lifecycle. Everything else is markdown that teaches the model how to be a scientist.
 
 <div align="center">
 
 | Layer | Components |
 |-------|-----------|
 | **User** | Terminal UI, Web Dashboard, Telegram, Discord, Slack, Feishu, WeChat, WhatsApp, Matrix |
-| **Gateway** | OpenClaw gateway — routes messages, manages sessions, handles tool calls |
-| **Agent** | Single `ScienceClaw` agent powered by `SCIENCE.md` (~600 lines) + 266 domain skills |
-| **Infrastructure** | `web_search`, `web_fetch`, `bash` — the three built-in OpenClaw tools that do everything |
+| **Gateway** | OpenClaw gateway — routes messages, manages sessions, handles tool calls (port 18789) |
+| **Agent** | `SCIENCE.md` (identity + research discipline) + 266 domain skills (loaded on demand) |
+| **Tools** | `web_search` (Brave), `bash` (Python/R/Julia + curl to REST APIs) — two tools do everything |
 
 </div>
+
+When models get smarter, ScienceClaw gets smarter — no code to update, no integrations to fix. See [Architecture docs](docs/architecture/ARCHITECTURE.md) for the full design rationale.
 
 ---
 
@@ -267,7 +275,7 @@ ScienceClaw searches across 15+ sources, cross-references results, and verifies 
 
 <br />
 
-77+ databases across 9 disciplines, all accessed through their public APIs via `web_fetch`.
+77+ databases across 9 disciplines, all accessed through their public REST APIs via `bash` + `curl`.
 
 <div align="center">
 
@@ -287,7 +295,7 @@ ScienceClaw searches across 15+ sources, cross-references results, and verifies 
 
 ---
 
-## 📚 Skills
+## 📚 266 Domain Skills
 
 <div align="center">
 <img src="assets/skills-domains.png" width="550" alt="Skills Domains" />
@@ -295,41 +303,42 @@ ScienceClaw searches across 15+ sources, cross-references results, and verifies 
 
 <br />
 
-266 domain skills provide detailed guidance for specific techniques. Each skill is a markdown file that teaches the model *how* to perform a particular analysis.
+Each skill is a markdown file that teaches the model *how* to perform a specific analysis — complete with API patterns, code templates, and validation steps.
 
 <div align="center">
 
-| Domain | Example Skills |
-|--------|---------------|
-| **Bioinformatics** | Differential expression, gene set enrichment, pathway analysis, network construction |
-| **Single-cell** | Clustering, trajectory inference, cell type annotation, RNA velocity |
-| **Survival analysis** | Kaplan-Meier curves, Cox regression, forest plots, nomograms |
-| **Visualization** | Volcano plots, heatmaps, Manhattan plots, Circos plots, UMAP/tSNE |
-| **Drug discovery** | Target identification, molecular docking, ADMET prediction, drug repurposing |
-| **Clinical** | Meta-analysis, diagnostic test evaluation, risk factor analysis, Mendelian randomization |
-| **Genomics** | Variant annotation, GWAS analysis, copy number variation, mutation signatures |
-| **Immunology** | Immune infiltration, neoantigen prediction, TCR/BCR repertoire analysis |
-| **Machine learning** | Feature selection, model training, cross-validation, SHAP interpretation |
+| Domain | Count | Skills |
+|--------|-------|--------|
+| **Bioinformatics** | 30+ | `scanpy`, `anndata`, `deseq2`, `clusterProfiler`, `GSEA`, `arboreto`, `pyDESeq2` |
+| **Visualization** | 35+ | `volcano-plot`, `heatmap`, `km-survival-curve`, `forest-plot`, `circos-plot`, `manhattan-plot` |
+| **Drug Discovery** | 20+ | `chembl-database`, `rdkit`, `zinc-database`, `alphafold-database`, `adaptyv`, `medchem` |
+| **Clinical & Survival** | 15+ | `clinicaltrials-database`, `meta-analysis`, `survival-analysis`, `mendelian-randomization` |
+| **Single-cell** | 10+ | `scanpy`, `scvi-tools`, `cellxgene-census`, `anndata`, `cell-type-annotation` |
+| **Genomics** | 15+ | `gene-database`, `ensembl-database`, `gwas-catalog`, `clinvar`, `variant-annotation` |
+| **Databases** | 20+ | `uniprot-database`, `pdb-database`, `string-database`, `opentargets`, `reactome` |
+| **Machine Learning** | 10+ | `scikit-learn`, `xgboost`, `feature-selection`, `shap-interpretation`, `aeon` |
+| **Scientific Writing** | 15+ | `academic-literature-search`, `writing`, `review-writing`, `peer-review`, `venue-templates` |
 
 </div>
+
+```bash
+./scienceclaw skills                    # browse all 266 skills by domain
+./scienceclaw skills search "survival"  # search by keyword
+```
 
 ---
 
 ## Deployment
 
-### Local (recommended for development)
+**Local** — already covered in [Quick Start](#quick-start).
 
-Already covered in [Quick Start](#quick-start).
-
-### Docker (sandbox only)
-
-The Docker setup provides a sandboxed Python/R/Julia execution environment:
+**Docker** — sandboxed Python/R/Julia execution:
 
 ```bash
-docker-compose -f docker/docker-compose.yml up
+docker compose -f docker/docker-compose.yml up
 ```
 
-See [Deployment Guide](docs/guides/deployment.md) for full production deployment options.
+See [Deployment Guide](docs/guides/deployment.md) for production options including autostart, reverse proxy, and cloud deployment.
 
 ---
 

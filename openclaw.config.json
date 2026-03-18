@@ -71,9 +71,9 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "claude/claude-sonnet-4-6",
+        "primary": "deepseek/deepseek-chat",
         "fallbacks": [
-          "deepseek/deepseek-chat",
+          "claude/claude-sonnet-4-6",
           "gemini/gemini-2.5-pro",
           "openai/gpt-4o"
         ]
@@ -162,15 +162,13 @@
         "*"
       ],
       "botToken": "${TELEGRAM_BOT_TOKEN}",
-      "groupPolicy": "open",
-      "groupAllowFrom": [
-        "*"
-      ],
+      "groupPolicy": "disabled",
+      "groupAllowFrom": [],
       "streaming": "partial",
       "commands": {
         "native": false
       },
-      "timeoutSeconds": 90,
+      "timeoutSeconds": 600,
       "retry": {
         "attempts": 5,
         "minDelayMs": 500,

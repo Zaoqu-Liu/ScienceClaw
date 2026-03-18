@@ -1,27 +1,25 @@
 # Quickstart
 
-Get from zero to your first research query in under 5 minutes.
+Get from zero to your first research query in under 2 minutes.
 
-**Prerequisites:** You've completed the [Installation](installation.md) steps (clone, `.env`, `setup.sh`).
+**Prerequisites:** You've completed the [Installation](installation.md) steps (clone + `setup.sh`).
 
 ---
 
 ## 1. Start ScienceClaw
 
-One command does everything -- starts the gateway in the background and opens the terminal UI:
-
 ```bash
 ./scienceclaw run
 ```
 
-You'll see:
+This starts the gateway in the background (port 18789) and opens the terminal UI. You'll see:
 
 ```
-  🚀 Starting Gateway on port 18789 ...
-  ✅ Gateway ready (PID 12345)
+  🚀 Starting ScienceClaw (port 18789)...
+  ✅ ScienceClaw is ready
 ```
 
-Then the TUI opens, showing the ScienceClaw agent ready for input.
+The TUI opens, showing the ScienceClaw agent ready for input.
 
 ---
 
@@ -132,11 +130,29 @@ If you prefer separate control:
 
 ---
 
-## 5. Next Steps
+## 5. Research Recipes
 
-Now that you're up and running:
+For common research patterns, ScienceClaw offers 6 pre-built Recipes that execute entire pipelines from a single prompt:
 
-- **[Configuration](configuration.md)** -- switch between Claude, GPT, and Gemini models
+```bash
+./scienceclaw recipes                          # list all Recipes
+./scienceclaw ask "分析 TP53 在肝癌中的作用"      # auto-matches gene-landscape Recipe
+./scienceclaw ask "综述 CRISPR 在基因治疗中的应用"  # auto-matches literature-review Recipe
+```
+
+After a Recipe completes, export your results:
+
+```
+/export word   → Word report with figures and citations
+/export pptx   → Presentation slides with key findings
+/export latex  → LaTeX manuscript draft
+```
+
+---
+
+## 6. Next Steps
+
+- **[Configuration](configuration.md)** -- switch between Claude, GPT, Gemini, and DeepSeek models
 - **[Skills Guide](../guides/skills.md)** -- explore 266 domain skills (single-cell, drug discovery, survival analysis, etc.)
 - **[Database Reference](../guides/databases.md)** -- see all 77+ databases the agent can query
 - **[Architecture](../architecture/ARCHITECTURE.md)** -- understand how ScienceClaw works under the hood

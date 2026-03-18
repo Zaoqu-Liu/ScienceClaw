@@ -79,44 +79,38 @@ The loading is governed by these settings in `openclaw.config.json`:
 
 ## Browsing Skills
 
-### List All Skills
-
-From the skills directory:
+### CLI (recommended)
 
 ```bash
-ls skills/
+./scienceclaw skills                    # list all 266 skills grouped by domain
+./scienceclaw skills search "protein"   # search by keyword
+./scienceclaw skills search "survival"  # find survival-related skills
+./scienceclaw skills search "database"  # find all database skills
 ```
 
-Or view the index file:
+### Direct File Access
 
 ```bash
-cat skills/INDEX.md
-```
-
-### Search for Skills by Topic
-
-```bash
-# Find protein-related skills
-ls skills/ | grep protein
-
-# Find all database skills
-ls skills/ | grep database
-
-# Find clinical skills
-ls skills/ | grep -E "clinical|trial"
-```
-
-### Read a Specific Skill
-
-```bash
-cat skills/pubmed-search/SKILL.md
+ls skills/                              # list all skill directories
+cat skills/pubmed-search/SKILL.md       # read a specific skill
+cat skills/CATALOG.json | head -50      # browse the skill index
 ```
 
 ---
 
 ## Skill Categories
 
-ScienceClaw ships with **266 skills** organized across these domains:
+ScienceClaw ships with **266 skills** organized across these domains.
+
+**New skills** added in the latest release:
+
+| Skill | Description |
+|-------|-------------|
+| `research-recipes` | 6 pre-built research workflows (gene-landscape, target-validation, literature-review, diff-expression, clinical-query, person-research) |
+| `export-docx` | Export project reports to Word (.docx) with embedded figures and references |
+| `export-pptx` | Export findings to PowerPoint (.pptx) with key findings, figures, and conclusions |
+| `export-latex` | Export findings to LaTeX manuscript draft (Nature, Cell, Lancet formats) |
+| `research-alerts` | `/watch` command for monitoring new publications on PubMed |
 
 ### Literature & Search (20+ skills)
 

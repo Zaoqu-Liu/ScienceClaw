@@ -1,6 +1,6 @@
 # Architecture
 
-ScienceClaw is built on a radical design principle: **zero custom code**. The entire product is a markdown file (`SCIENCE.md`) plus 266 domain skill files, running on the OpenClaw engine. There are no TypeScript services, no Python servers, no MCP plugins. The language model does 99% of the work.
+ScienceClaw is built on a radical design principle: **zero custom code**. The entire product is one markdown file ([`SCIENCE.md`](../../SCIENCE.md), ~600 lines) plus 266 domain skill files, running on the OpenClaw engine. There are no TypeScript services, no Python servers, no MCP plugins. The language model does 99% of the work.
 
 ---
 
@@ -63,15 +63,14 @@ The agent has no persistent state of its own. It operates purely through its con
 
 ### Layer 4: Infrastructure
 
-Three built-in tools provided by OpenClaw:
+Two primary tools provided by OpenClaw:
 
 | Tool | What It Does | How the Agent Uses It |
 |------|-------------|----------------------|
-| `web_search` | Google search | Broad discovery of papers, databases, documentation |
-| `web_fetch` | HTTP GET/POST | Query REST APIs (PubMed, UniProt, ChEMBL, etc.) directly |
-| `bash` | Shell command execution | Run Python, R, Julia code for analysis and visualization |
+| `web_search` | Brave search | Broad discovery of papers, databases, documentation |
+| `bash` | Shell command execution | Run Python/R/Julia code, query REST APIs via `curl` (PubMed, UniProt, ChEMBL, etc.) |
 
-No additional tools, no MCP servers, no custom integrations. These three tools are sufficient because scientific databases expose REST APIs, and analysis code can be written and executed on the fly.
+No additional tools, no MCP servers, no custom integrations. These two tools are sufficient because scientific databases expose REST APIs (queried via `bash` + `curl`), and analysis code can be written and executed on the fly.
 
 ---
 
@@ -223,7 +222,7 @@ ScienceClaw approach:
   (0 lines of custom code, ~600 lines of markdown)
 ```
 
-The `scienceclaw` bash wrapper (~130 lines) manages the gateway lifecycle. `SCIENCE.md` (~600 lines) teaches the model how to be a scientist. Everything else is skills (pure markdown).
+The `scienceclaw` bash wrapper manages the gateway lifecycle. `SCIENCE.md` (~600 lines) teaches the model how to be a scientist. Everything else is 266 skills (pure markdown), including 6 Research Recipes for end-to-end workflows, 3 export skills (Word/PPT/LaTeX), and a literature monitoring skill (`/watch`).
 
 ---
 
@@ -271,21 +270,25 @@ Total custom code involved: **0 lines**. The model did all the thinking.
 
 ```
 scienceclaw/
-├── scienceclaw              # Bash wrapper (gateway lifecycle, ~130 lines)
+├── scienceclaw              # Bash wrapper (gateway lifecycle)
 ├── SCIENCE.md               # Agent brain (identity + instructions, ~600 lines)
 ├── openclaw.config.json     # Configuration (models, agents, skills, gateway)
 ├── package.json             # Node.js package (depends on openclaw engine)
 ├── .env                     # API keys and tokens (not committed)
 ├── .env.example             # Environment variable template
 ├── scripts/
-│   └── setup.sh             # One-time setup script
+│   ├── setup.sh             # Interactive setup wizard
+│   ├── i18n.sh              # Bilingual message system (zh/en)
+│   └── channel.mjs          # Channel management helper
 ├── skills/                  # 266 domain skills
-│   ├── pubmed-search/
-│   │   └── SKILL.md
-│   ├── alphafold-database/
-│   │   └── SKILL.md
-│   ├── scanpy/
-│   │   └── SKILL.md
+│   ├── CATALOG.json         # Skill index (name, title, description)
+│   ├── research-recipes/    # 6 pre-built research workflows
+│   ├── export-docx/         # Export to Word
+│   ├── export-pptx/         # Export to PowerPoint
+│   ├── export-latex/        # Export to LaTeX
+│   ├── research-alerts/     # /watch literature monitoring
+│   ├── scanpy/              # Single-cell analysis
+│   ├── alphafold-database/  # Protein structure predictions
 │   └── ... (266 total)
 ├── docs/                    # Documentation (you are here)
 ├── docker/                  # Docker sandbox configuration
