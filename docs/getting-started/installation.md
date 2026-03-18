@@ -67,19 +67,7 @@ API Key: sk-your-deepseek-key
 Base URL: https://api.deepseek.com/v1
 ```
 
-### Option B: yunwu.ai Relay (access all models from China)
-
-A single key gives you access to Claude, GPT-4o, Gemini, and more through a relay that works in China.
-
-1. Sign up at [yunwu.ai](https://yunwu.ai/)
-2. When setup asks:
-
-```
-API Key: sk-your-relay-key
-Base URL: https://yunwu.ai/v1
-```
-
-### Option C: OpenRouter (300+ models, one key)
+### Option B: OpenRouter (300+ models, one key)
 
 Access to hundreds of models including free ones. Works best outside China.
 
@@ -153,7 +141,7 @@ This command tests every configured model and tells you which ones work. Follow 
 
 **Common causes:**
 - **404** — The model was removed from the provider. Switch to another model.
-- **403** — Region-blocked. Use DeepSeek or yunwu.ai relay instead.
+- **403** — Region-blocked. Use DeepSeek or OpenRouter relay instead.
 - **429** — Too many people using the free model. Wait or switch to a paid model.
 - **402** — Account balance depleted. Top up or switch to a free model.
 

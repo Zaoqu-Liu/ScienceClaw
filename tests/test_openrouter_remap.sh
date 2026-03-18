@@ -142,14 +142,14 @@ assert_json_eq "claude baseUrl still openrouter" \
 
 echo ""
 
-# ── TEST 2: yunwu.ai (should NOT remap) ──────────────────────────────
-echo "  $(_cyan 'TEST 2: yunwu.ai — no remapping should occur')"
+# ── TEST 2: non-OpenRouter relay (should NOT remap) ──────────────────
+echo "  $(_cyan 'TEST 2: generic relay — no remapping should occur')"
 
-export OPENAI_BASE_URL="https://yunwu.ai/v1"
-export CLAUDE_BASE_URL="https://yunwu.ai/v1"
-export GEMINI_BASE_URL="https://yunwu.ai/v1"
+export OPENAI_BASE_URL="https://relay.example.com/v1"
+export CLAUDE_BASE_URL="https://relay.example.com/v1"
+export GEMINI_BASE_URL="https://relay.example.com/v1"
 export DEEPSEEK_API_KEY="sk-or-test-key"
-export DEEPSEEK_BASE_URL="https://yunwu.ai/v1"
+export DEEPSEEK_BASE_URL="https://relay.example.com/v1"
 
 _build_runtime_config 2>/dev/null
 T2=$(cat "$RUNTIME_CONFIG")
@@ -184,10 +184,10 @@ assert_json_eq "audio model stays whisper-1" \
 
 echo ""
 
-# ── TEST 3: Mixed (Claude=OpenRouter, OpenAI=yunwu, Gemini=direct, DeepSeek=direct) ───
+# ── TEST 3: Mixed (Claude=OpenRouter, OpenAI=relay, Gemini=direct, DeepSeek=direct) ───
 echo "  $(_cyan 'TEST 3: Mixed providers — only OpenRouter providers get remapped')"
 
-export OPENAI_BASE_URL="https://yunwu.ai/v1"
+export OPENAI_BASE_URL="https://relay.example.com/v1"
 export CLAUDE_BASE_URL="https://openrouter.ai/api/v1"
 export GEMINI_BASE_URL="https://generativelanguage.googleapis.com/v1beta"
 export DEEPSEEK_API_KEY="sk-or-test-key"
@@ -200,7 +200,7 @@ assert_json_eq "claude model[0] remapped → anthropic/claude-sonnet-4.6" \
   "models.providers.claude.models.0.id" \
   "anthropic/claude-sonnet-4.6" "$T3"
 
-assert_json_eq "openai model[0] stays gpt-4o (yunwu)" \
+assert_json_eq "openai model[0] stays gpt-4o (relay)" \
   "models.providers.openai.models.0.id" \
   "gpt-4o" "$T3"
 
@@ -228,7 +228,7 @@ assert_json_eq "fallback[2] stays (openai not on OpenRouter)" \
   "agents.defaults.model.fallbacks.2" \
   "openai/gpt-4o" "$T3"
 
-assert_json_eq "audio model stays whisper-1 (yunwu)" \
+assert_json_eq "audio model stays whisper-1 (relay)" \
   "tools.media.audio.models.0.model" \
   "whisper-1" "$T3"
 

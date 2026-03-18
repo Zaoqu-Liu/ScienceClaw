@@ -121,9 +121,9 @@ If the port is open but TUI can't connect, the auth token may be mismatched. Bot
    DEEPSEEK_API_KEY=sk-your-deepseek-key
    DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
 
-   # Option 2: Use yunwu.ai relay
-   OPENAI_API_KEY=sk-your-relay-key
-   OPENAI_BASE_URL=https://yunwu.ai/v1
+   # Option 2: Use OpenRouter relay
+   OPENAI_API_KEY=sk-or-your-relay-key
+   OPENAI_BASE_URL=https://openrouter.ai/api/v1
    ```
 3. **Restart after changes:**
    ```bash
@@ -143,9 +143,9 @@ If the port is open but TUI can't connect, the auth token may be mismatched. Bot
    DEEPSEEK_API_KEY=sk-your-key
    DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
    ```
-2. **Use a relay service** — yunwu.ai acts as a proxy and bypasses regional blocks:
+2. **Use a relay service** — OpenRouter acts as a proxy and bypasses regional blocks:
    ```bash
-   OPENAI_BASE_URL=https://yunwu.ai/v1
+   OPENAI_BASE_URL=https://openrouter.ai/api/v1
    ```
 3. **Run `./scienceclaw doctor`** to verify which providers are reachable from your network.
 
@@ -179,7 +179,7 @@ Verify the model ID in `openclaw.config.json` matches what your provider offers.
 - Regenerate your API key from the provider dashboard
 - Check your account balance/credits
 - Try a different model (e.g., switch from `claude-opus-4-6` to `deepseek-chat`)
-- Check if the relay service (yunwu.ai, openrouter) is operational
+- Check if the relay service (OpenRouter) is operational
 - Run `./scienceclaw doctor` for automated diagnostics
 
 ### Agent Returns Errors About Tools

@@ -117,9 +117,9 @@ Pass API keys via `.env` file or environment section:
 ```yaml
 environment:
   - OPENAI_API_KEY=sk-your-key
-  - OPENAI_BASE_URL=https://yunwu.ai/v1
+  - OPENAI_BASE_URL=https://openrouter.ai/api/v1
   - CLAUDE_API_KEY=sk-your-key
-  - CLAUDE_BASE_URL=https://yunwu.ai/v1
+  - CLAUDE_BASE_URL=https://openrouter.ai/api/v1
 ```
 
 Never bake API keys into Docker images.
@@ -224,9 +224,9 @@ fly launch --no-deploy
 
 # Set secrets
 fly secrets set OPENAI_API_KEY=sk-your-key
-fly secrets set OPENAI_BASE_URL=https://yunwu.ai/v1
+fly secrets set OPENAI_BASE_URL=https://openrouter.ai/api/v1
 fly secrets set CLAUDE_API_KEY=sk-your-key
-fly secrets set CLAUDE_BASE_URL=https://yunwu.ai/v1
+fly secrets set CLAUDE_BASE_URL=https://openrouter.ai/api/v1
 
 # Deploy
 fly deploy
@@ -265,7 +265,7 @@ railway init
 
 # Set environment variables
 railway variables set OPENAI_API_KEY=sk-your-key
-railway variables set OPENAI_BASE_URL=https://yunwu.ai/v1
+railway variables set OPENAI_BASE_URL=https://openrouter.ai/api/v1
 
 # Deploy
 railway up

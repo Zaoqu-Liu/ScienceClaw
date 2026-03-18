@@ -30,15 +30,15 @@ DEEPSEEK_API_KEY=sk-your-deepseek-key
 DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
 ```
 
-**Relay service (yunwu.ai):** A single key accesses all providers through one endpoint.
+**Relay service (OpenRouter):** A single key accesses all providers through one endpoint.
 
 ```bash
-OPENAI_API_KEY=sk-your-relay-key
-OPENAI_BASE_URL=https://yunwu.ai/v1
-CLAUDE_API_KEY=sk-your-relay-key
-CLAUDE_BASE_URL=https://yunwu.ai/v1
-GEMINI_API_KEY=sk-your-relay-key
-GEMINI_BASE_URL=https://yunwu.ai/v1
+OPENAI_API_KEY=sk-or-your-relay-key
+OPENAI_BASE_URL=https://openrouter.ai/api/v1
+CLAUDE_API_KEY=sk-or-your-relay-key
+CLAUDE_BASE_URL=https://openrouter.ai/api/v1
+GEMINI_API_KEY=sk-or-your-relay-key
+GEMINI_BASE_URL=https://openrouter.ai/api/v1
 ```
 
 > **Tip:** Providers without valid API keys are automatically pruned at startup. Only configure the ones you actually have keys for.
@@ -91,8 +91,8 @@ Each provider defines a base URL, API key, API format, and available models.
   "models": {
     "providers": {
       "openai": {
-        "baseUrl": "https://yunwu.ai/v1",
-        "apiKey": "sk-your-key",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "apiKey": "sk-or-your-key",
         "api": "openai-completions",
         "models": [
           { "id": "gpt-4o", "name": "GPT-4o" },
@@ -100,8 +100,8 @@ Each provider defines a base URL, API key, API format, and available models.
         ]
       },
       "claude": {
-        "baseUrl": "https://yunwu.ai/v1",
-        "apiKey": "sk-your-key",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "apiKey": "sk-or-your-key",
         "api": "openai-completions",
         "models": [
           { "id": "claude-sonnet-4-6", "name": "Claude Sonnet 4.6" },
@@ -109,8 +109,8 @@ Each provider defines a base URL, API key, API format, and available models.
         ]
       },
       "gemini": {
-        "baseUrl": "https://yunwu.ai/v1",
-        "apiKey": "sk-your-key",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "apiKey": "sk-or-your-key",
         "api": "openai-completions",
         "models": [
           { "id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash" },

@@ -58,10 +58,10 @@ _m() {
       deps_fail)      echo "    ❌ 安装失败，请检查网络后重试" ;;
       apikey_exists)  echo "    .env 已存在且包含 API key，跳过。" ;;
       apikey_prompt)  echo "    ScienceClaw 需要一个 LLM API key 来驱动 AI 能力。" ;;
-      apikey_options) echo "    支持: OpenAI / Claude / Gemini / DeepSeek，或中转 yunwu.ai / OpenRouter" ;;
+      apikey_options) echo "    支持: OpenAI / Claude / Gemini / DeepSeek，或中转 OpenRouter" ;;
       apikey_provider) echo "    推荐: 国内用户选 DeepSeek (https://platform.deepseek.com/) 无需代理" ;;
       apikey_input)   printf "    API Key: " ;;
-      apikey_baseurl) printf "    Base URL [https://yunwu.ai/v1]: " ;;
+      apikey_baseurl) printf "    Base URL [https://openrouter.ai/api/v1]: " ;;
       apikey_saved)   echo "    ✅ 已保存 (gateway token 已自动生成)" ;;
       apikey_skip)    echo "    跳过。稍后编辑 .env 文件配置。" ;;
       apikey_valid)   echo "    ✅ API Key 验证通过" ;;
@@ -128,10 +128,10 @@ _m() {
       deps_fail)      echo "    ❌ Install failed. Check your network and try again." ;;
       apikey_exists)  echo "    .env exists with API key. Skipping." ;;
       apikey_prompt)  echo "    ScienceClaw needs an LLM API key to power AI capabilities." ;;
-      apikey_options) echo "    Supports: OpenAI / Claude / Gemini / DeepSeek, or relay (yunwu.ai / OpenRouter)" ;;
+      apikey_options) echo "    Supports: OpenAI / Claude / Gemini / DeepSeek, or relay (OpenRouter)" ;;
       apikey_provider) echo "    Tip: DeepSeek (https://platform.deepseek.com/) is affordable and works in China" ;;
       apikey_input)   printf "    API Key: " ;;
-      apikey_baseurl) printf "    Base URL [https://yunwu.ai/v1]: " ;;
+      apikey_baseurl) printf "    Base URL [https://openrouter.ai/api/v1]: " ;;
       apikey_saved)   echo "    ✅ Saved (gateway token auto-generated)" ;;
       apikey_skip)    echo "    Skipped. Edit .env later." ;;
       apikey_valid)   echo "    ✅ API Key validated successfully" ;;
@@ -253,7 +253,7 @@ else
 
   _m apikey_baseurl
   read BASE_URL
-  BASE_URL="${BASE_URL:-https://yunwu.ai/v1}"
+  BASE_URL="${BASE_URL:-https://openrouter.ai/api/v1}"
 
   if [ -n "$API_KEY" ]; then
     # Validate the key

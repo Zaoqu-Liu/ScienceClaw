@@ -81,7 +81,7 @@ cd ScienceClaw
 bash scripts/setup.sh       # installs everything, configures API key + channels
 ```
 
-> **China users:** When setup asks for API key, use [DeepSeek](https://platform.deepseek.com/) (no proxy needed, very affordable) or [yunwu.ai](https://yunwu.ai/) relay. See the [Installation Guide](docs/getting-started/installation.md) for details.
+> **China users:** When setup asks for API key, use [DeepSeek](https://platform.deepseek.com/) (no proxy needed, very affordable) or [OpenRouter](https://openrouter.ai/) relay. See the [Installation Guide](docs/getting-started/installation.md) for details.
 
 ### Step 2 — Run
 

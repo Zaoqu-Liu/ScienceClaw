@@ -6,10 +6,10 @@ AI-powered scientific illustration generation using Gemini Image models. Creates
 
 | Parameter | Value |
 |-----------|-------|
-| **Provider** | Google Gemini via yunwu.ai relay |
+| **Provider** | Google Gemini |
 | **Model** | `gemini-3.1-flash-image-preview` |
-| **Base URL** | `https://yunwu.ai/v1beta/models` |
-| **Full Endpoint** | `https://yunwu.ai/v1beta/models/gemini-3.1-flash-image-preview:generateContent` |
+| **Base URL** | `${GEMINI_BASE_URL:-https://generativelanguage.googleapis.com/v1beta}/models` |
+| **Full Endpoint** | `${GEMINI_BASE_URL}/models/gemini-3.1-flash-image-preview:generateContent` |
 | **Auth** | `Authorization: Bearer <LLM_API_KEY>` |
 | **API Key env var** | `LLM_API_KEY` (Gemini series key) |
 | **Response** | Image in `candidates[].content.parts[].inlineData.data` (base64 PNG) |
@@ -17,7 +17,7 @@ AI-powered scientific illustration generation using Gemini Image models. Creates
 ## API Call Structure
 
 ```bash
-curl -X POST "https://yunwu.ai/v1beta/models/gemini-3.1-flash-image-preview:generateContent" \
+curl -X POST "${GEMINI_BASE_URL:-https://generativelanguage.googleapis.com/v1beta}/models/gemini-3.1-flash-image-preview:generateContent" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LLM_API_KEY" \
   -d '{
@@ -35,7 +35,8 @@ import httpx, base64
 
 API_KEY = "your-gemini-key"
 MODEL = "gemini-3.1-flash-image-preview"
-URL = f"https://yunwu.ai/v1beta/models/{MODEL}:generateContent"
+BASE = os.environ.get("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta")
+URL = f"{BASE}/models/{MODEL}:generateContent"
 
 async def generate(prompt: str) -> bytes:
     payload = {
