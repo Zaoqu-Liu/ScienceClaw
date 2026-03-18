@@ -21,8 +21,8 @@ ScienceClaw is built on a radical design principle: **zero custom code**. The en
 │   LLM (Claude / GPT / Gemini)                   │
 ├─────────────────────────────────────────────────┤
 │              Infrastructure                      │
-│   web_search  │  web_fetch  │  bash              │
-│   (Google)    │  (REST APIs)│  (Python/R/Julia)  │
+│        web_search       │       bash              │
+│        (Brave)          │  (Python/R/Julia/curl)  │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -47,9 +47,8 @@ The gateway is entirely provided by OpenClaw. ScienceClaw adds zero code to it.
 ```
 Client (TUI) <--WebSocket--> Gateway <--API--> LLM Provider
                                 │
-                                ├── web_search (via Google)
-                                ├── web_fetch (HTTP requests)
-                                └── bash (shell commands)
+                                ├── web_search (via Brave)
+                                └── bash (Python/R/Julia + curl for REST APIs)
 ```
 
 ### Layer 3: Agent
@@ -105,7 +104,7 @@ SCIENCE.md includes exact API endpoints for:
 - Europe PMC API
 - Jina Reader (for full-text extraction)
 
-The agent constructs HTTP requests to these APIs using `web_fetch`.
+The agent constructs HTTP requests to these APIs using `bash` + `curl`.
 
 ### Database Query Patterns
 
@@ -192,7 +191,7 @@ ScienceClaw follows three design principles from [Agentic Product Design](https:
 
 > The biggest lesson from 70 years of AI research is that general methods leveraging computation win in the long run.
 
-No scaffolding. The model queries PubMed directly via `web_fetch`. There is no "PubMed integration" middleware, no query builder, no response parser. The model reads the API documentation (in SCIENCE.md and skills) and constructs requests itself.
+No scaffolding. The model queries PubMed directly via `bash` + `curl`. There is no "PubMed integration" middleware, no query builder, no response parser. The model reads the API documentation (in SCIENCE.md and skills) and constructs requests itself.
 
 When models get smarter, they automatically use these APIs better. No code needs updating.
 
@@ -218,7 +217,7 @@ Traditional approach:
   (hundreds of files, thousands of lines of code)
 
 ScienceClaw approach:
-  User → Gateway → Model → web_fetch → External API
+  User → Gateway → Model → bash + curl → External API
   (0 lines of custom code, ~600 lines of markdown)
 ```
 
@@ -240,19 +239,19 @@ Here's what happens when you ask: "Find recent papers on CRISPR base editing in 
    - Relevant skills (pubmed-search, literature-search, etc.)
    - Previous conversation history
    │
-4. LLM decides to call web_fetch with PubMed API:
-   URL: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi
+4. LLM decides to call bash with curl to PubMed API:
+   curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi
         ?db=pubmed&retmode=json&retmax=20
-        &term=CRISPR+base+editing+sickle+cell+disease
+        &term=CRISPR+base+editing+sickle+cell+disease"
    │
-5. Gateway executes web_fetch, returns JSON with PMIDs
+5. Gateway executes bash, returns JSON with PMIDs
    │
-6. LLM calls web_fetch again to get abstracts:
-   URL: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi
-        ?db=pubmed&retmode=xml&id=PMID1,PMID2,...
+6. LLM calls bash + curl again to get abstracts:
+   curl -s "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi
+        ?db=pubmed&retmode=xml&id=PMID1,PMID2,..."
    │
-7. LLM may also call web_fetch with OpenAlex for citation counts:
-   URL: https://api.openalex.org/works?search=CRISPR+base+editing+sickle+cell
+7. LLM may also query OpenAlex for citation counts:
+   curl -s "https://api.openalex.org/works?search=CRISPR+base+editing+sickle+cell"
    │
 8. LLM reads all results, synthesizes a response with:
    - Paper summaries with real citations

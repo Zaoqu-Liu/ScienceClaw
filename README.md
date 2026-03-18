@@ -309,14 +309,14 @@ Each skill is a markdown file that teaches the model *how* to perform a specific
 
 | Domain | Count | Skills |
 |--------|-------|--------|
-| **Bioinformatics** | 30+ | `scanpy`, `anndata`, `deseq2`, `clusterProfiler`, `GSEA`, `arboreto`, `pyDESeq2` |
-| **Visualization** | 35+ | `volcano-plot`, `heatmap`, `km-survival-curve`, `forest-plot`, `circos-plot`, `manhattan-plot` |
+| **Bioinformatics** | 30+ | `scanpy`, `anndata`, `pydeseq2`, `arboreto`, `biopython`, `deeptools`, `pysam` |
+| **Visualization** | 35+ | `matplotlib`, `seaborn`, `plotly`, `visualization`, `networkx` |
 | **Drug Discovery** | 20+ | `chembl-database`, `rdkit`, `zinc-database`, `alphafold-database`, `adaptyv`, `medchem` |
-| **Clinical & Survival** | 15+ | `clinicaltrials-database`, `meta-analysis`, `survival-analysis`, `mendelian-randomization` |
-| **Single-cell** | 10+ | `scanpy`, `scvi-tools`, `cellxgene-census`, `anndata`, `cell-type-annotation` |
-| **Genomics** | 15+ | `gene-database`, `ensembl-database`, `gwas-catalog`, `clinvar`, `variant-annotation` |
-| **Databases** | 20+ | `uniprot-database`, `pdb-database`, `string-database`, `opentargets`, `reactome` |
-| **Machine Learning** | 10+ | `scikit-learn`, `xgboost`, `feature-selection`, `shap-interpretation`, `aeon` |
+| **Clinical & Survival** | 15+ | `clinicaltrials-database`, `scikit-survival`, `clinical`, `fda-database` |
+| **Single-cell** | 10+ | `scanpy`, `scvi-tools`, `cellxgene-census`, `anndata` |
+| **Genomics** | 15+ | `gene-database`, `ensembl-database`, `gwas-database`, `clinvar-database`, `geo-database` |
+| **Databases** | 20+ | `uniprot-database`, `pdb-database`, `string-database`, `opentargets-database`, `reactome-database` |
+| **Machine Learning** | 10+ | `scikit-learn`, `shap`, `aeon`, `statistics`, `exploratory-data-analysis` |
 | **Scientific Writing** | 15+ | `academic-literature-search`, `writing`, `review-writing`, `peer-review`, `venue-templates` |
 
 </div>

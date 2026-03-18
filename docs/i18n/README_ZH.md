@@ -275,14 +275,14 @@ ScienceClaw 跨 15+ 数据源检索，交叉验证结果，确认引用后才纳
 
 | 领域 | 数量 | 技能示例 |
 |------|------|----------|
-| **生物信息学** | 30+ | `scanpy`、`anndata`、`deseq2`、`clusterProfiler`、`GSEA`、`arboreto`、`pyDESeq2` |
-| **可视化** | 35+ | `volcano-plot`、`heatmap`、`km-survival-curve`、`forest-plot`、`circos-plot`、`manhattan-plot` |
+| **生物信息学** | 30+ | `scanpy`、`anndata`、`pydeseq2`、`arboreto`、`biopython`、`deeptools`、`pysam` |
+| **可视化** | 35+ | `matplotlib`、`seaborn`、`plotly`、`visualization`、`networkx` |
 | **药物发现** | 20+ | `chembl-database`、`rdkit`、`zinc-database`、`alphafold-database`、`adaptyv`、`medchem` |
-| **临床与生存** | 15+ | `clinicaltrials-database`、`meta-analysis`、`survival-analysis`、`mendelian-randomization` |
-| **单细胞** | 10+ | `scanpy`、`scvi-tools`、`cellxgene-census`、`anndata`、`cell-type-annotation` |
-| **基因组学** | 15+ | `gene-database`、`ensembl-database`、`gwas-catalog`、`clinvar`、`variant-annotation` |
-| **数据库** | 20+ | `uniprot-database`、`pdb-database`、`string-database`、`opentargets`、`reactome` |
-| **机器学习** | 10+ | `scikit-learn`、`xgboost`、`feature-selection`、`shap-interpretation`、`aeon` |
+| **临床与生存** | 15+ | `clinicaltrials-database`、`scikit-survival`、`clinical`、`fda-database` |
+| **单细胞** | 10+ | `scanpy`、`scvi-tools`、`cellxgene-census`、`anndata` |
+| **基因组学** | 15+ | `gene-database`、`ensembl-database`、`gwas-database`、`clinvar-database`、`geo-database` |
+| **数据库** | 20+ | `uniprot-database`、`pdb-database`、`string-database`、`opentargets-database`、`reactome-database` |
+| **机器学习** | 10+ | `scikit-learn`、`shap`、`aeon`、`statistics`、`exploratory-data-analysis` |
 | **科学写作** | 15+ | `academic-literature-search`、`writing`、`review-writing`、`peer-review`、`venue-templates` |
 
 </div>
