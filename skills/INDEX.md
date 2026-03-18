@@ -1,6 +1,6 @@
 # ScienceClaw Skill Index
 
-**264 skills** across all scientific domains.
+**266 skills** across all scientific domains.
 
 | Skill | Description |
 |-------|-------------|

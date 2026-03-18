@@ -116,7 +116,7 @@ cat skills/pubmed-search/SKILL.md
 
 ## Skill Categories
 
-ScienceClaw ships with **264 skills** organized across these domains:
+ScienceClaw ships with **266 skills** organized across these domains:
 
 ### Literature & Search (20+ skills)
 

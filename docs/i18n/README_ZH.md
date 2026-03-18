@@ -9,7 +9,7 @@
 **你的 AI 科研伙伴**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](../../LICENSE)
-[![Skills](https://img.shields.io/badge/Skills-264+-orange.svg?style=for-the-badge)](../../README.md#-skills)
+[![Skills](https://img.shields.io/badge/Skills-266+-orange.svg?style=for-the-badge)](../../README.md#-skills)
 [![Databases](https://img.shields.io/badge/Databases-77+-green.svg?style=for-the-badge)](../../README.md#-database-access)
 [![Search Sources](https://img.shields.io/badge/Search_Sources-15+-purple.svg?style=for-the-badge)](../../README.md#-deep-research)
 [![Node](https://img.shields.io/badge/Node-22+-339933.svg?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -20,7 +20,7 @@
 
 ---
 
-ScienceClaw 是一个科学研究智能体。它搜索文献、查询数据库、运行分析、生成图表、撰写报告——零自定义代码，完全基于 [OpenClaw](https://github.com/openclaw/openclaw) 构建，仅靠一个 Markdown 文件（`SCIENCE.md`，约 200 行）和 264 个领域技能。模型完成 99% 的工作；Markdown 教会它如何成为一名科学家。
+ScienceClaw 是一个科学研究智能体。它搜索文献、查询数据库、运行分析、生成图表、撰写报告——零自定义代码，完全基于 [OpenClaw](https://github.com/openclaw/openclaw) 构建，仅靠一个 Markdown 文件（`SCIENCE.md`，约 600 行）和 266 个领域技能。模型完成 99% 的工作；Markdown 教会它如何成为一名科学家。
 
 ---
 
@@ -159,7 +159,7 @@ ScienceClaw 继承 OpenClaw 的所有渠道集成。连接你习惯的界面：
 <br />
 
 ```
-ScienceClaw = OpenClaw + SCIENCE.md + 264 个技能
+ScienceClaw = OpenClaw + SCIENCE.md + 266 个技能
 ```
 
 没有 TypeScript。没有 Python 服务器。没有 MCP。没有插件。模型完成所有工作。
@@ -170,7 +170,7 @@ ScienceClaw = OpenClaw + SCIENCE.md + 264 个技能
 |------|------|
 | **用户层** | 终端 UI、Web 面板、Telegram、Discord、Slack、飞书、微信、WhatsApp、Matrix |
 | **网关层** | OpenClaw 网关——消息路由、会话管理、工具调用 |
-| **智能体层** | 单一 `ScienceClaw` 智能体，由 `SCIENCE.md`（约 200 行）+ 264 领域技能驱动 |
+| **智能体层** | 单一 `ScienceClaw` 智能体，由 `SCIENCE.md`（约 600 行）+ 266 领域技能驱动 |
 | **基础设施层** | `web_search`、`web_fetch`、`bash`——OpenClaw 内置的三个工具搞定一切 |
 
 </div>
@@ -238,7 +238,7 @@ ScienceClaw 跨 15+ 数据源检索，交叉验证结果，确认引用后才纳
 
 <br />
 
-264 个领域技能为特定技术提供详细指导。每个技能是一个 Markdown 文件，教会模型*如何*执行特定分析。
+266 个领域技能为特定技术提供详细指导。每个技能是一个 Markdown 文件，教会模型*如何*执行特定分析。
 
 <div align="center">
 
@@ -267,7 +267,7 @@ ScienceClaw 跨 15+ 数据源检索，交叉验证结果，确认引用后才纳
 ### Docker
 
 ```bash
-docker-compose up
+docker-compose -f docker/docker-compose.yml up
 ```
 
 ### 云端部署

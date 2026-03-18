@@ -137,7 +137,7 @@ Key defaults:
 |---------|-------|---------|
 | `dmPolicy` | `"open"` | Anyone can DM the bot |
 | `groupPolicy` | `"open"` | Bot responds in any group |
-| `commands.native` | `false` | Disables Telegram slash command registration (ScienceClaw has 264+ skills, exceeding Telegram's ~100 command limit) |
+| `commands.native` | `false` | Disables Telegram slash command registration (ScienceClaw has 266+ skills, exceeding Telegram's ~100 command limit) |
 | `streaming` | `"partial"` | Bot edits its message as the response streams in |
 
 To restrict access, change `dmPolicy` to `"pairing"` or `groupPolicy` to `"allowlist"` and specify allowed user/group IDs.

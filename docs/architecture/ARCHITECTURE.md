@@ -1,6 +1,6 @@
 # Architecture
 
-ScienceClaw is built on a radical design principle: **zero custom code**. The entire product is a markdown file (`SCIENCE.md`) plus 264 domain skill files, running on the OpenClaw engine. There are no TypeScript services, no Python servers, no MCP plugins. The language model does 99% of the work.
+ScienceClaw is built on a radical design principle: **zero custom code**. The entire product is a markdown file (`SCIENCE.md`) plus 266 domain skill files, running on the OpenClaw engine. There are no TypeScript services, no Python servers, no MCP plugins. The language model does 99% of the work.
 
 ---
 
@@ -17,7 +17,7 @@ ScienceClaw is built on a radical design principle: **zero custom code**. The en
 ├─────────────────────────────────────────────────┤
 │                   Agent                          │
 │   SCIENCE.md (identity + instructions)           │
-│   264 skills (domain knowledge)                  │
+│   266 skills (domain knowledge)                  │
 │   LLM (Claude / GPT / Gemini)                   │
 ├─────────────────────────────────────────────────┤
 │              Infrastructure                      │
@@ -56,8 +56,8 @@ Client (TUI) <--WebSocket--> Gateway <--API--> LLM Provider
 
 The agent is the LLM (Claude, GPT, or Gemini) loaded with two types of context:
 
-1. **SCIENCE.md** -- the agent's identity and core instructions (~224 lines)
-2. **Skills** -- 264 domain-specific markdown files loaded on demand
+1. **SCIENCE.md** -- the agent's identity and core instructions (~600 lines)
+2. **Skills** -- 266 domain-specific markdown files loaded on demand
 
 The agent has no persistent state of its own. It operates purely through its context window, using the instructions in SCIENCE.md and loaded skills to decide what tools to call and how to interpret results.
 
@@ -152,7 +152,7 @@ scienceclaw/
       SKILL.md          ← loaded by engine
     scanpy/
       SKILL.md          ← loaded by engine
-    ... (264 total)
+    ... (266 total)
 ```
 
 The OpenClaw engine:
@@ -220,10 +220,10 @@ Traditional approach:
 
 ScienceClaw approach:
   User → Gateway → Model → web_fetch → External API
-  (0 lines of custom code, ~224 lines of markdown)
+  (0 lines of custom code, ~600 lines of markdown)
 ```
 
-The `scienceclaw` bash wrapper (~130 lines) manages the gateway lifecycle. `SCIENCE.md` (~224 lines) teaches the model how to be a scientist. Everything else is skills (pure markdown).
+The `scienceclaw` bash wrapper (~130 lines) manages the gateway lifecycle. `SCIENCE.md` (~600 lines) teaches the model how to be a scientist. Everything else is skills (pure markdown).
 
 ---
 
@@ -272,21 +272,21 @@ Total custom code involved: **0 lines**. The model did all the thinking.
 ```
 scienceclaw/
 ├── scienceclaw              # Bash wrapper (gateway lifecycle, ~130 lines)
-├── SCIENCE.md               # Agent brain (identity + instructions, ~224 lines)
+├── SCIENCE.md               # Agent brain (identity + instructions, ~600 lines)
 ├── openclaw.config.json     # Configuration (models, agents, skills, gateway)
 ├── package.json             # Node.js package (depends on openclaw engine)
 ├── .env                     # API keys and tokens (not committed)
 ├── .env.example             # Environment variable template
 ├── scripts/
 │   └── setup.sh             # One-time setup script
-├── skills/                  # 264 domain skills
+├── skills/                  # 266 domain skills
 │   ├── pubmed-search/
 │   │   └── SKILL.md
 │   ├── alphafold-database/
 │   │   └── SKILL.md
 │   ├── scanpy/
 │   │   └── SKILL.md
-│   └── ... (264 total)
+│   └── ... (266 total)
 ├── docs/                    # Documentation (you are here)
 ├── docker/                  # Docker sandbox configuration
 ├── assets/                  # Images and logos

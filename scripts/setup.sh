@@ -272,7 +272,7 @@ else
 
     GW_TOKEN=$(openssl rand -hex 24 2>/dev/null || node -e "console.log(require('crypto').randomBytes(24).toString('hex'))" 2>/dev/null || echo "sc-$(date +%s)-$$")
 
-    local is_deepseek=false
+    is_deepseek=false
     if echo "$BASE_URL" | grep -qi "deepseek"; then
       is_deepseek=true
     fi

@@ -74,7 +74,7 @@ data = response.json()
 
 ## Reporting bugs
 
-Found a bug? Please [open a bug report](../../issues/new?template=bug_report.yml) using our issue template. Include steps to reproduce, expected behavior, and any relevant logs.
+Found a bug? Please [open a bug report](https://github.com/Zaoqu-Liu/ScienceClaw/issues/new?template=bug_report.yml) using our issue template. Include steps to reproduce, expected behavior, and any relevant logs.
 
 ## Development setup
 

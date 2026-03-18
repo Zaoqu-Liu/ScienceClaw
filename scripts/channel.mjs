@@ -355,6 +355,7 @@ async function addChannel(channelId, args) {
     // Format validation
     if (def.tokenPattern && i === 0 && !def.tokenPattern.test(value)) {
       console.error(_m("invalid"));
+      process.exit(1);
     }
 
     values.push(value);

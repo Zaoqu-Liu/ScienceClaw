@@ -13,7 +13,7 @@ Common issues and their solutions when running ScienceClaw.
 **Check the log:**
 
 ```bash
-cat /tmp/scienceclaw-gateway.log
+cat ~/.scienceclaw/gateway.log
 ```
 
 **Common causes:**
@@ -86,7 +86,7 @@ bash scripts/setup.sh
 If it reports "Gateway not running", the gateway may have crashed after starting. Check the log:
 
 ```bash
-tail -50 /tmp/scienceclaw-gateway.log
+tail -50 ~/.scienceclaw/gateway.log
 ```
 
 **Verify the port:**
@@ -241,7 +241,7 @@ The path must be **absolute**, not relative.
 
 ```bash
 ls skills/ | wc -l
-# Should show 264+ entries
+# Should show 266+ entries
 ```
 
 **Check loading limits:**
@@ -358,7 +358,7 @@ The engine may warn about models that are configured but not available from the 
 
 The first query after starting may take longer (30-60 seconds) because:
 
-1. The engine loads and indexes all 264 skills
+1. The engine loads and indexes all 266 skills
 2. The model processes SCIENCE.md and relevant skills
 3. The first API call may have cold-start latency
 
@@ -410,7 +410,7 @@ If none of the above resolves your issue:
 2. Open a new issue with:
    - Your OS and Node.js version (`node -v`)
    - The error message or unexpected behavior
-   - Contents of `/tmp/scienceclaw-gateway.log`
+   - Contents of `~/.scienceclaw/gateway.log`
    - Your `openclaw.config.json` (with API keys redacted)
 
 ---

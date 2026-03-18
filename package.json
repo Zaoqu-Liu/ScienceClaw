@@ -1,7 +1,7 @@
 {
   "name": "scienceclaw",
   "version": "0.2.0",
-  "description": "AI Research Colleague -- SCIENCE.md + 264 skills on OpenClaw. Zero custom code.",
+  "description": "AI Research Colleague -- SCIENCE.md + 266 skills on OpenClaw. Zero custom code.",
   "type": "module",
   "bin": {
     "scienceclaw": "./scienceclaw"
@@ -10,7 +10,7 @@
     "start": "./scienceclaw run",
     "tui": "./scienceclaw tui",
     "setup": "bash scripts/setup.sh",
-    "test": "bash tests/smoke_test.sh",
+    "test": "bash tests/test_openrouter_remap.sh",
     "stop": "./scienceclaw stop"
   },
   "keywords": [

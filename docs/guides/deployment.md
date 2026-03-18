@@ -25,8 +25,8 @@ This is equivalent to:
 
 **Details:**
 - Gateway listens on `localhost:18789`
-- Gateway log at `/tmp/scienceclaw-gateway.log`
-- PID file at `/tmp/scienceclaw-gateway.pid`
+- Gateway log at `~/.scienceclaw/gateway.log`
+- PID file at `~/.scienceclaw/gateway.pid`
 - Agent workspace at `~/.scienceclaw/workspace`
 
 ### Managing the Gateway
@@ -330,7 +330,7 @@ When the agent runs code via `bash`, it executes on the host by default. For pro
 ./scienceclaw status
 
 # View gateway logs
-tail -f /tmp/scienceclaw-gateway.log
+tail -f ~/.scienceclaw/gateway.log
 
 # For systemd deployments
 sudo journalctl -u scienceclaw -f --no-pager
@@ -342,7 +342,7 @@ For long-running deployments, configure log rotation:
 
 ```bash
 # /etc/logrotate.d/scienceclaw
-/tmp/scienceclaw-gateway.log {
+~/.scienceclaw/gateway.log {
     daily
     rotate 7
     compress

@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [0.2.0] - 2026-03-07
 
 ### Added
-- 264 domain skills covering bioinformatics, drug discovery, clinical analysis, and more
+- 266 domain skills covering bioinformatics, drug discovery, clinical analysis, and more
 - Multi-model fallback support (primary + fallback chain)
 - Telegram channel integration
 - Docker sandbox for isolated code execution (Python 3.11, R, Julia)

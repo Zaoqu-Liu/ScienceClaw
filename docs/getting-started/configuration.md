@@ -351,7 +351,7 @@ Chat channels (Telegram, Discord, Slack, etc.) are configured here. Each channel
 | `groupPolicy` | Group access policy: `"open"` or `"allowlist"` |
 | `groupAllowFrom` | Array of allowed group IDs; `["*"]` allows all |
 | `streaming` | Response streaming mode: `"partial"` (live updates) or `"full"` (send on complete) |
-| `commands.native` | Set to `false` to disable slash command registration (recommended — ScienceClaw has 264+ skills which exceeds Telegram's command limit) |
+| `commands.native` | Set to `false` to disable slash command registration (recommended — ScienceClaw has 266+ skills which exceeds Telegram's command limit) |
 
 See the [Channel Integrations](../channels/README.md) guide for setup instructions for each platform.
 

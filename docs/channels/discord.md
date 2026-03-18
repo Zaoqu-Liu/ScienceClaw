@@ -77,7 +77,7 @@ Also add the Discord plugin to the `"plugins"` section:
 }
 ```
 
-> **Why `commands.native: false`?** ScienceClaw has 264+ skills. Discord's slash command limit may cause registration errors. Disable native commands and use natural language instead.
+> **Why `commands.native: false`?** ScienceClaw has 266+ skills. Discord's slash command limit may cause registration errors. Disable native commands and use natural language instead.
 
 ## Step 5: Start and Test
 

@@ -81,7 +81,7 @@ Base URL: https://openrouter.ai/api/v1
 
 > **Important:** Free-tier models (with `:free` suffix) on OpenRouter are unstable — they may be rate-limited, region-blocked, or removed without notice. Paid models are much more reliable.
 
-### Option D: Direct API Access
+### Option C: Direct API Access
 
 Use official provider endpoints directly. Requires overseas network access for OpenAI and Claude.
 
@@ -199,5 +199,5 @@ Connect ScienceClaw to your favorite messaging platform:
 
 - [Quickstart Guide](quickstart.md) — Ask your first research question
 - [Configuration Reference](configuration.md) — Customize models, skills, and settings
-- [Skills Guide](../guides/skills.md) — Explore 264 domain-specific capabilities
+- [Skills Guide](../guides/skills.md) — Explore 266 domain-specific capabilities
 - [Troubleshooting](../guides/troubleshooting.md) — Common issues and solutions
