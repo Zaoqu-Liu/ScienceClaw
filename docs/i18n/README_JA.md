@@ -9,7 +9,7 @@
 **ワンプロンプト。完全な遺伝子解析パイプライン。カスタムコードゼロ。**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](../../LICENSE)
-[![Skills](https://img.shields.io/badge/Domain_Skills-266-orange.svg?style=for-the-badge)](../../README.md#-266-domain-skills)
+[![Skills](https://img.shields.io/badge/Domain_Skills-275-orange.svg?style=for-the-badge)](../../README.md#-275-domain-skills)
 [![Databases](https://img.shields.io/badge/Databases-77+-green.svg?style=for-the-badge)](../../README.md#-database-access)
 [![Search Sources](https://img.shields.io/badge/Search_Sources-15+-purple.svg?style=for-the-badge)](../../README.md#-deep-research)
 [![Code](https://img.shields.io/badge/Custom_Code-0_lines-E64B35.svg?style=for-the-badge)](../../README.md#architecture)
@@ -22,7 +22,7 @@
 
 ScienceClaw は科学研究AIエージェントです。`「TP53の肝癌における役割を分析」`と入力するだけで、15以上の文献ソースを自律的に検索し、77以上のデータベースをクエリし、Rで生存分析を実行し、ジャーナル品質の図表を生成し、実際の引用付きの完全なレポートを提供します — 捏造なし、幻覚なし。
 
-カスタムコードゼロ。[OpenClaw](https://github.com/openclaw/openclaw) 上に構築され、1つのMarkdownファイル（[`SCIENCE.md`](../../SCIENCE.md)、約600行）と266のドメインスキルのみで動作します。モデルが99%の作業を実行し、Markdownが科学者としての振る舞いを教えます。
+カスタムコードゼロ。[OpenClaw](https://github.com/openclaw/openclaw) 上に構築され、1つのMarkdownファイル（[`SCIENCE.md`](../../SCIENCE.md)、約600行）と275のドメインスキルのみで動作します。モデルが99%の作業を実行し、Markdownが科学者としての振る舞いを教えます。
 
 ---
 
@@ -182,7 +182,7 @@ ScienceClaw はOpenClawのすべてのチャネル統合を継承しています
 <br />
 
 ```
-ScienceClaw = OpenClaw engine + SCIENCE.md (~600 lines) + 266 Skills (markdown)
+ScienceClaw = OpenClaw engine + SCIENCE.md (~600 lines) + 275 Skills (markdown)
             = 0 lines of custom code
 ```
 
@@ -194,7 +194,7 @@ TypeScriptなし。Pythonサーバーなし。MCPなし。プラグインなし�
 |---------|-------------|
 | **ユーザー** | ターミナルUI、Webダッシュボード、Telegram、Discord、Slack、Feishu、WeChat、WhatsApp、Matrix |
 | **ゲートウェイ** | OpenClaw ゲートウェイ — メッセージルーティング、セッション管理、ツールコール（ポート18789） |
-| **エージェント** | `SCIENCE.md`（アイデンティティ + 研究規律）+ 266ドメインスキル（オンデマンド読み込み） |
+| **エージェント** | `SCIENCE.md`（アイデンティティ + 研究規律）+ 275ドメインスキル（オンデマンド読み込み） |
 | **ツール** | `web_search`（Brave）、`bash`（Python/R/Julia + curlでREST API）— 2つのツールですべてを実現 |
 
 </div>
@@ -254,7 +254,7 @@ ScienceClaw は15以上のソースにまたがって検索し、結果をクロ
 
 ---
 
-## 📚 266 ドメインスキル
+## 📚 275 ドメインスキル
 
 <div align="center">
 <img src="../../assets/skills-domains.png" width="550" alt="スキルドメイン" />

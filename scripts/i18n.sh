@@ -60,7 +60,7 @@ _msg() {
       help_dash)        echo "    dashboard           网页面板" ;;
       help_models)      echo "    models              检测模型状态（哪些能用、哪些挂了）" ;;
       help_doctor)      echo "    doctor              全面健康检查" ;;
-      help_skills)      echo "    skills              浏览专业能力（266 项）" ;;
+      help_skills)      echo "    skills              浏览专业能力（275 项）" ;;
       help_outputs)     echo "    outputs             查看输出文件" ;;
       help_logs)        echo "    logs                查看实时日志" ;;
       help_ask)         echo "    ask \"问题\"          一次性提问" ;;
@@ -179,7 +179,7 @@ _msg() {
       help_dash)        echo "    dashboard           Open web dashboard" ;;
       help_models)      echo "    models              Check model status (which ones work)" ;;
       help_doctor)      echo "    doctor              Full health check" ;;
-      help_skills)      echo "    skills              Browse capabilities (266 skills)" ;;
+      help_skills)      echo "    skills              Browse capabilities (275 skills)" ;;
       help_outputs)     echo "    outputs             View output files" ;;
       help_logs)        echo "    logs                Tail gateway logs" ;;
       help_ask)         echo "    ask \"query\"          One-shot query" ;;

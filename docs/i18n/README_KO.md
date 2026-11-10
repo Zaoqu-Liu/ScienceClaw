@@ -9,7 +9,7 @@
 **하나의 프롬프트. 완전한 유전자 분석 파이프라인. 커스텀 코드 제로.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](../../LICENSE)
-[![Skills](https://img.shields.io/badge/Domain_Skills-266-orange.svg?style=for-the-badge)](#-266-도메인-스킬)
+[![Skills](https://img.shields.io/badge/Domain_Skills-275-orange.svg?style=for-the-badge)](#-275-도메인-스킬)
 [![Databases](https://img.shields.io/badge/Databases-77+-green.svg?style=for-the-badge)](../../README.md#-database-access)
 [![Search Sources](https://img.shields.io/badge/Search_Sources-15+-purple.svg?style=for-the-badge)](../../README.md#-deep-research)
 [![Code](https://img.shields.io/badge/Custom_Code-0_lines-E64B35.svg?style=for-the-badge)](#아키텍처)
@@ -22,7 +22,7 @@
 
 ScienceClaw는 과학 연구 AI 에이전트입니다. `"TP53의 간암에서의 역할 분석"`이라고 입력하면, 15개 이상의 문헌 소스를 자율적으로 검색하고, 77개 이상의 데이터베이스를 쿼리하고, R에서 생존 분석을 실행하고, 저널 품질의 그래프를 생성하고, 실제 인용이 포함된 완전한 보고서를 제공합니다 — 조작 없음, 환각 없음.
 
-커스텀 코드 제로. [OpenClaw](https://github.com/openclaw/openclaw) 위에 구축되어 하나의 Markdown 파일([`SCIENCE.md`](../../SCIENCE.md), 약 600줄)과 266개의 도메인 스킬만으로 동작합니다. 모델이 99%의 작업을 수행하고, Markdown이 과학자가 되는 방법을 가르칩니다.
+커스텀 코드 제로. [OpenClaw](https://github.com/openclaw/openclaw) 위에 구축되어 하나의 Markdown 파일([`SCIENCE.md`](../../SCIENCE.md), 약 600줄)과 275개의 도메인 스킬만으로 동작합니다. 모델이 99%의 작업을 수행하고, Markdown이 과학자가 되는 방법을 가르칩니다.
 
 ---
 
@@ -182,7 +182,7 @@ ScienceClaw는 OpenClaw의 모든 채널 통합을 상속합니다. 선호하는
 <br />
 
 ```
-ScienceClaw = OpenClaw 엔진 + SCIENCE.md (~600줄) + 266 스킬 (마크다운)
+ScienceClaw = OpenClaw 엔진 + SCIENCE.md (~600줄) + 275 스킬 (마크다운)
             = 0줄의 커스텀 코드
 ```
 
@@ -194,7 +194,7 @@ TypeScript 없음. Python 서버 없음. MCP 없음. 플러그인 없음. 미들
 |-------|---------|
 | **사용자** | 터미널 UI, 웹 대시보드, Telegram, Discord, Slack, Feishu, WeChat, WhatsApp, Matrix |
 | **게이트웨이** | OpenClaw 게이트웨이 — 메시지 라우팅, 세션 관리, 도구 호출 (포트 18789) |
-| **에이전트** | `SCIENCE.md` (정체성 + 연구 규율) + 266 도메인 스킬 (수요 시 로드) |
+| **에이전트** | `SCIENCE.md` (정체성 + 연구 규율) + 275 도메인 스킬 (수요 시 로드) |
 | **도구** | `web_search` (Brave), `bash` (Python/R/Julia + REST API용 curl) — 두 도구로 모든 것 수행 |
 
 </div>
@@ -254,7 +254,7 @@ ScienceClaw는 15개 이상의 소스에서 검색하고, 결과를 교차 참�
 
 ---
 
-## 📚 266 도메인 스킬
+## 📚 275 도메인 스킬
 
 <div align="center">
 <img src="../../assets/skills-domains.png" width="550" alt="스킬 도메인" />

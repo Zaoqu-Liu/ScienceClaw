@@ -1,6 +1,6 @@
 # ScienceClaw Skill Index
 
-**266 skills** across all scientific domains.
+**275 skills** across all scientific domains.
 
 | Skill | Description |
 |-------|-------------|
@@ -12,6 +12,7 @@
 | [arboreto](arboreto/SKILL.md) | Infer gene regulatory networks (GRNs) from gene expression data using scalable a... |
 | [article-writing](article-writing/SKILL.md) | Write articles, guides, blog posts, tutorials, newsletter issues, and other long... |
 | [arxiv-search](arxiv-search/SKILL.md) | Search arXiv physics, math, and computer science preprints using natural languag... |
+| [asta-corpus-search](asta-corpus-search/SKILL.md) | Search Allen AI's Asta Scientific Corpus (225M+ papers, 12M+ full-text, 2.4B+ ci... |
 | [astropy](astropy/SKILL.md) | Comprehensive Python library for astronomy and astrophysics. This skill should b... |
 | [benchling-integration](benchling-integration/SKILL.md) | Benchling R&D platform integration. Access registry (DNA, proteins), inventory, ... |
 | [bioagent-longevity-scholar](bioagent-longevity-scholar/SKILL.md) | This skill should be used when users explicitly request academic papers, recent ... |
@@ -23,6 +24,7 @@
 | [biorxiv-search](biorxiv-search/SKILL.md) | Search bioRxiv biology preprints with natural language queries. Semantic search ... |
 | [bioservices](bioservices/SKILL.md) | Unified Python interface to 40+ bioinformatics services. Use when querying multi... |
 | [brenda-database](brenda-database/SKILL.md) | Access BRENDA enzyme database via SOAP API. Retrieve kinetic parameters (Km, kca... |
+| [browser-automation](browser-automation/SKILL.md) | Access scientific databases lacking REST APIs via browser-use framework (81k+ Gi... |
 | [cellxgene-census](cellxgene-census/SKILL.md) | Query the CELLxGENE Census (61M+ cells) programmatically. Use when you need expr... |
 | [chembl-database](chembl-database/SKILL.md) | Query ChEMBL bioactive molecules and drug discovery data. Search compounds by st... |
 | [chembl-search](chembl-search/SKILL.md) | Search ChEMBL bioactive molecules database with natural language queries. Find c... |
@@ -57,15 +59,21 @@
 | [dnanexus-integration](dnanexus-integration/SKILL.md) | DNAnexus cloud genomics platform. Build apps/applets, manage data (upload/downlo... |
 | [drug-discovery-search](drug-discovery-search/SKILL.md) | End-to-end drug discovery platform combining ChEMBL compounds, DrugBank, targets... |
 | [drug-labels-search](drug-labels-search/SKILL.md) | Search FDA drug labels with natural language queries. Official drug information,... |
+| [drug-repurposing](drug-repurposing/SKILL.md) | Systematic drug repurposing analysis: drug profile, target network analysis, cli... |
 | [drugbank-database](drugbank-database/SKILL.md) | Access and analyze comprehensive drug information from the DrugBank database inc... |
 | [drugbank-search](drugbank-search/SKILL.md) | Search DrugBank comprehensive drug database with natural language queries. Drug ... |
 | [ena-database](ena-database/SKILL.md) | Access European Nucleotide Archive via API/FTP. Retrieve DNA/RNA sequences, raw ... |
 | [ensembl-database](ensembl-database/SKILL.md) | Query Ensembl genome database REST API for 250+ species. Gene lookups, sequence ... |
 | [esm](esm/SKILL.md) | Comprehensive toolkit for protein language models including ESM3 (generative mul... |
 | [etetoolkit](etetoolkit/SKILL.md) | Phylogenetic tree toolkit (ETE). Tree manipulation (Newick/NHX), evolutionary ev... |
+| [evolving-memory](evolving-memory/SKILL.md) | Learn from every research session with four memory types: findings, ideation (re... |
 | [exploratory-data-analysis](exploratory-data-analysis/SKILL.md) | Perform comprehensive exploratory data analysis on scientific data files across ... |
+| [export-docx](export-docx/SKILL.md) | Export project reports to Word format with embedded figures and references. Trig... |
+| [export-latex](export-latex/SKILL.md) | Export project findings to LaTeX paper draft with figures, references, and metho... |
+| [export-pptx](export-pptx/SKILL.md) | Export project findings to presentation slides with key findings, figures, and c... |
 | [fair-data](fair-data/SKILL.md) | Guidelines for making scientific data FAIR: Findable, Accessible, Interoperable,... |
 | [fda-database](fda-database/SKILL.md) | Query openFDA API for drugs, devices, adverse events, recalls, regulatory submis... |
+| [figure-pipeline](figure-pipeline/SKILL.md) | Five-step publication figure generation: Retrieve reference figures → Plan compo... |
 | [flowio](flowio/SKILL.md) | Parse FCS (Flow Cytometry Standard) files v2.0-3.1. Extract events as NumPy arra... |
 | [fluidsim](fluidsim/SKILL.md) | Framework for computational fluid dynamics simulations using Python. Use when ru... |
 | [frontend-slides](frontend-slides/SKILL.md) | Create stunning, animation-rich HTML presentations from scratch or by converting... |
@@ -94,6 +102,7 @@
 | [literature](literature/SKILL.md) | Comprehensive academic literature search and synthesis across 15+ sources. |
 | [literature-review](literature-review/SKILL.md) | Conduct comprehensive, systematic literature reviews using multiple academic dat... |
 | [literature-search](literature-search/SKILL.md) | Comprehensive scientific literature search across PubMed, arXiv, bioRxiv, medRxi... |
+| [manuscript-review-revise](manuscript-review-revise/SKILL.md) | AI-powered manuscript review and revision using ScholarEval 8-dimension rubric p... |
 | [market-research](market-research/SKILL.md) | Conduct market research, competitive analysis, investor due diligence, and indus... |
 | [market-research-reports](market-research-reports/SKILL.md) | Generate comprehensive market research reports (50+ pages) in the style of top c... |
 | [markitdown](markitdown/SKILL.md) | Convert files and office documents to Markdown. Supports PDF, DOCX, PPTX, XLSX, ... |
@@ -110,6 +119,7 @@
 | [medrxiv-search](medrxiv-search/SKILL.md) | Search medRxiv medical preprints with natural language queries. Powered by Valyu... |
 | [metabolomics-workbench-database](metabolomics-workbench-database/SKILL.md) | Access NIH Metabolomics Workbench via REST API (4,200+ studies). Query metabolit... |
 | [modal](modal/SKILL.md) | Run Python code in the cloud with serverless containers, GPUs, and autoscaling. ... |
+| [molecular-dynamics](molecular-dynamics/SKILL.md) | Autonomous MD simulation pipeline: structure retrieval, system preparation, mini... |
 | [molfeat](molfeat/SKILL.md) | Molecular featurization for ML (100+ featurizers). ECFP, MACCS, descriptors, pre... |
 | [networkx](networkx/SKILL.md) | Comprehensive toolkit for creating, analyzing, and visualizing complex networks ... |
 | [neurokit2](neurokit2/SKILL.md) | Comprehensive biosignal processing toolkit for analyzing physiological data incl... |
@@ -164,8 +174,10 @@
 | [reactome-database](reactome-database/SKILL.md) | Query Reactome REST API for pathway analysis, enrichment, gene-pathway mapping, ... |
 | [regulatory-submission](regulatory-submission/SKILL.md) | Prepare regulatory submissions for drugs, biologics, devices, and diagnostics. |
 | [reproducibility-checklist](reproducibility-checklist/SKILL.md) | Ensure research is reproducible, transparent, and meets open science standards. |
+| [research-alerts](research-alerts/SKILL.md) | Monitor research topics and alert on new publications. Triggers: /watch, 监控, 关注课... |
 | [research-grants](research-grants/SKILL.md) | Write competitive research proposals for NSF, NIH, DOE, DARPA, and Taiwan NSTC. ... |
 | [research-lookup](research-lookup/SKILL.md) | Look up current research information using Perplexity Sonar Pro Search or Sonar ... |
+| [research-recipes](research-recipes/SKILL.md) | Pre-built research workflow templates. Triggers: gene analysis (分析 X 在 Y 中的作用), ... |
 | [review-writing](review-writing/SKILL.md) | Use this skill when the user asks to write a literature review, review article, ... |
 | [rowan](rowan/SKILL.md) | Cloud-based quantum chemistry platform with Python API. Preferred for computatio... |
 | [scanpy](scanpy/SKILL.md) | Standard single-cell RNA-seq analysis pipeline. Use for QC, normalization, dimen... |
@@ -193,7 +205,9 @@
 | [statistics](statistics/SKILL.md) | Comprehensive statistical methodology for scientific research. Covers test selec... |
 | [statsmodels](statsmodels/SKILL.md) | Statistical models library for Python. Use when you need specific model classes ... |
 | [string-database](string-database/SKILL.md) | Query STRING API for protein-protein interactions (59M proteins, 20B interaction... |
+| [svg-scientific-figures](svg-scientific-figures/SKILL.md) | Generate editable SVG scientific illustrations (mechanism diagrams, signaling pa... |
 | [sympy](sympy/SKILL.md) | Use this skill when working with symbolic mathematics in Python. This skill shou... |
+| [therapeutic-reasoning-chain](therapeutic-reasoning-chain/SKILL.md) | Multi-step therapeutic reasoning chaining ToolUniverse tool calls with clinical ... |
 | [tooluniverse](tooluniverse/SKILL.md) | Router skill for ToolUniverse tasks. First checks if specialized tooluniverse sk... |
 | [tooluniverse-adverse-event-detection](tooluniverse-adverse-event-detection/SKILL.md) | Detect and analyze adverse drug event signals using FDA FAERS data, drug labels,... |
 | [tooluniverse-antibody-engineering](tooluniverse-antibody-engineering/SKILL.md) | Comprehensive antibody engineering and optimization for therapeutic development.... |

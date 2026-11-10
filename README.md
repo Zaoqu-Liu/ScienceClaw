@@ -9,7 +9,7 @@
 **One prompt. Complete gene analysis pipeline. Zero custom code.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-[![Skills](https://img.shields.io/badge/Domain_Skills-266-orange.svg?style=for-the-badge)](#-266-domain-skills)
+[![Skills](https://img.shields.io/badge/Domain_Skills-275-orange.svg?style=for-the-badge)](#-275-domain-skills)
 [![Databases](https://img.shields.io/badge/Databases-77+-green.svg?style=for-the-badge)](#-database-access)
 [![Search Sources](https://img.shields.io/badge/Search_Sources-15+-purple.svg?style=for-the-badge)](#-deep-research)
 [![Code](https://img.shields.io/badge/Custom_Code-0_lines-E64B35.svg?style=for-the-badge)](#architecture)
@@ -22,7 +22,7 @@
 
 ScienceClaw is a science research AI agent. Say `"分析 TP53 在肝癌中的作用"` and it autonomously searches 15+ literature sources, queries 77+ databases, runs survival analysis in R, generates publication-quality figures, and delivers a full report with real citations — no fabrication, no hallucination.
 
-Zero custom code. Built entirely on [OpenClaw](https://github.com/openclaw/openclaw) with one markdown file ([`SCIENCE.md`](SCIENCE.md), ~600 lines) and 266 domain skills. The model does 99% of the work; the markdown teaches it how to be a scientist.
+Zero custom code. Built entirely on [OpenClaw](https://github.com/openclaw/openclaw) with one markdown file ([`SCIENCE.md`](SCIENCE.md), ~600 lines) and 275 domain skills. The model does 99% of the work; the markdown teaches it how to be a scientist.
 
 ---
 
@@ -221,7 +221,7 @@ ScienceClaw inherits all channel integrations from OpenClaw. Connect your prefer
 <br />
 
 ```
-ScienceClaw = OpenClaw engine + SCIENCE.md (~600 lines) + 266 Skills (markdown)
+ScienceClaw = OpenClaw engine + SCIENCE.md (~600 lines) + 275 Skills (markdown)
             = 0 lines of custom code
 ```
 
@@ -233,7 +233,7 @@ No TypeScript. No Python servers. No MCP. No plugins. No middleware. The `scienc
 |-------|-----------|
 | **User** | Terminal UI, Web Dashboard, Telegram, Discord, Slack, Feishu, WeChat, WhatsApp, Matrix |
 | **Gateway** | OpenClaw gateway — routes messages, manages sessions, handles tool calls (port 18789) |
-| **Agent** | `SCIENCE.md` (identity + research discipline) + 266 domain skills (loaded on demand) |
+| **Agent** | `SCIENCE.md` (identity + research discipline) + 275 domain skills (loaded on demand) |
 | **Tools** | `web_search` (Brave), `bash` (Python/R/Julia + curl to REST APIs) — two tools do everything |
 
 </div>
@@ -295,7 +295,7 @@ ScienceClaw searches across 15+ sources, cross-references results, and verifies 
 
 ---
 
-## 📚 266 Domain Skills
+## 📚 275 Domain Skills
 
 <div align="center">
 <img src="assets/skills-domains.png" width="550" alt="Skills Domains" />
@@ -322,7 +322,7 @@ Each skill is a markdown file that teaches the model *how* to perform a specific
 </div>
 
 ```bash
-./scienceclaw skills                    # browse all 266 skills by domain
+./scienceclaw skills                    # browse all 275 skills by domain
 ./scienceclaw skills search "survival"  # search by keyword
 ```
 

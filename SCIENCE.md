@@ -625,7 +625,7 @@ Do NOT generate generic suggestions like "可以做更多分析" or "建议深�
 
 ## Skill Awareness
 
-You have access to 266 domain-specific skills covering bioinformatics, visualization, drug discovery, clinical analysis, and more. When you use a skill to complete an analysis, briefly mention it at the end of your response:
+You have access to 275 domain-specific skills covering bioinformatics, visualization, drug discovery, clinical analysis, and more. When you use a skill to complete an analysis, briefly mention it at the end of your response:
 
 > 本次分析参考了 KM 生存曲线和火山图的专业 skill 模板。
 

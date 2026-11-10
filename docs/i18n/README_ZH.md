@@ -9,7 +9,7 @@
 **一句话启动完整基因分析流程。零自定义代码。**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](../../LICENSE)
-[![Skills](https://img.shields.io/badge/Domain_Skills-266-orange.svg?style=for-the-badge)](#-266-个领域技能)
+[![Skills](https://img.shields.io/badge/Domain_Skills-275-orange.svg?style=for-the-badge)](#-275-个领域技能)
 [![Databases](https://img.shields.io/badge/Databases-77+-green.svg?style=for-the-badge)](#-数据库访问)
 [![Search Sources](https://img.shields.io/badge/Search_Sources-15+-purple.svg?style=for-the-badge)](#-深度检索)
 [![Code](https://img.shields.io/badge/Custom_Code-0_lines-E64B35.svg?style=for-the-badge)](#架构)
@@ -22,7 +22,7 @@
 
 ScienceClaw 是一个科学研究 AI 智能体。输入 `"分析 TP53 在肝癌中的作用"`，它会自主搜索 15+ 文献源、查询 77+ 数据库、在 R 中运行生存分析、生成期刊级图表，最终交付一份完整报告——引用真实，零杜撰。
 
-零自定义代码。完全基于 [OpenClaw](https://github.com/openclaw/openclaw) 构建，仅靠一个 Markdown 文件（[`SCIENCE.md`](../../SCIENCE.md)，约 600 行）和 266 个领域技能。模型完成 99% 的工作；Markdown 教会它如何成为一名科学家。
+零自定义代码。完全基于 [OpenClaw](https://github.com/openclaw/openclaw) 构建，仅靠一个 Markdown 文件（[`SCIENCE.md`](../../SCIENCE.md)，约 600 行）和 275 个领域技能。模型完成 99% 的工作；Markdown 教会它如何成为一名科学家。
 
 ---
 
@@ -189,7 +189,7 @@ ScienceClaw 继承 OpenClaw 的所有渠道集成。连接你习惯的界面：
 <br />
 
 ```
-ScienceClaw = OpenClaw engine + SCIENCE.md (~600 lines) + 266 Skills (markdown)
+ScienceClaw = OpenClaw engine + SCIENCE.md (~600 lines) + 275 Skills (markdown)
             = 0 lines of custom code
 ```
 
@@ -201,7 +201,7 @@ ScienceClaw = OpenClaw engine + SCIENCE.md (~600 lines) + 266 Skills (markdown)
 |------|------|
 | **用户层** | 终端 UI、Web 面板、Telegram、Discord、Slack、飞书、微信、WhatsApp、Matrix |
 | **网关层** | OpenClaw 网关——消息路由、会话管理、工具调用（端口 18789） |
-| **智能体层** | `SCIENCE.md`（身份 + 研究规范）+ 266 领域技能（按需加载） |
+| **智能体层** | `SCIENCE.md`（身份 + 研究规范）+ 275 领域技能（按需加载） |
 | **工具层** | `web_search`（Brave）、`bash`（Python/R/Julia + curl 调用 REST API）——两个工具搞定一切 |
 
 </div>
@@ -261,7 +261,7 @@ ScienceClaw 跨 15+ 数据源检索，交叉验证结果，确认引用后才纳
 
 ---
 
-## 📚 266 个领域技能
+## 📚 275 个领域技能
 
 <div align="center">
 <img src="../../assets/skills-domains.png" width="550" alt="技能领域" />
@@ -288,7 +288,7 @@ ScienceClaw 跨 15+ 数据源检索，交叉验证结果，确认引用后才纳
 </div>
 
 ```bash
-./scienceclaw skills                    # 按领域浏览全部 266 个技能
+./scienceclaw skills                    # 按领域浏览全部 275 个技能
 ./scienceclaw skills search "survival"  # 按关键词搜索
 ```
 

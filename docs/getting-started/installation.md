@@ -199,5 +199,5 @@ Connect ScienceClaw to your favorite messaging platform:
 
 - [Quickstart Guide](quickstart.md) — Ask your first research question
 - [Configuration Reference](configuration.md) — Customize models, skills, and settings
-- [Skills Guide](../guides/skills.md) — Explore 266 domain-specific capabilities
+- [Skills Guide](../guides/skills.md) — Explore 275 domain-specific capabilities
 - [Troubleshooting](../guides/troubleshooting.md) — Common issues and solutions
