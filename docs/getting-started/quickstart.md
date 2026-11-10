@@ -153,7 +153,7 @@ After a Recipe completes, export your results:
 ## 6. Next Steps
 
 - **[Configuration](configuration.md)** -- switch between Claude, GPT, Gemini, and DeepSeek models
-- **[Skills Guide](../guides/skills.md)** -- explore 266 domain skills (single-cell, drug discovery, survival analysis, etc.)
+- **[Skills Guide](../guides/skills.md)** -- explore 275 domain skills (single-cell, drug discovery, survival analysis, etc.)
 - **[Database Reference](../guides/databases.md)** -- see all 77+ databases the agent can query
 - **[Architecture](../architecture/ARCHITECTURE.md)** -- understand how ScienceClaw works under the hood
 - **[Deployment](../guides/deployment.md)** -- run ScienceClaw in Docker or deploy to production

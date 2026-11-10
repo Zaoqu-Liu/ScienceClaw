@@ -241,7 +241,7 @@ The path must be **absolute**, not relative.
 
 ```bash
 ls skills/ | wc -l
-# Should show 266+ entries
+# Should show 275+ entries
 ```
 
 **Check loading limits:**
@@ -358,7 +358,7 @@ The engine may warn about models that are configured but not available from the 
 
 The first query after starting may take longer (30-60 seconds) because:
 
-1. The engine loads and indexes all 266 skills
+1. The engine loads and indexes all 275 skills
 2. The model processes SCIENCE.md and relevant skills
 3. The first API call may have cold-start latency
 

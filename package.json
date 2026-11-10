@@ -1,7 +1,7 @@
 {
   "name": "scienceclaw",
   "version": "0.2.0",
-  "description": "AI Research Colleague -- SCIENCE.md + 266 skills on OpenClaw. Zero custom code.",
+  "description": "AI Research Colleague -- SCIENCE.md + 275 skills on OpenClaw. Zero custom code.",
   "type": "module",
   "bin": {
     "scienceclaw": "./scienceclaw"

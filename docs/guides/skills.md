@@ -82,7 +82,7 @@ The loading is governed by these settings in `openclaw.config.json`:
 ### CLI (recommended)
 
 ```bash
-./scienceclaw skills                    # list all 266 skills grouped by domain
+./scienceclaw skills                    # list all 275 skills grouped by domain
 ./scienceclaw skills search "protein"   # search by keyword
 ./scienceclaw skills search "survival"  # find survival-related skills
 ./scienceclaw skills search "database"  # find all database skills
@@ -100,7 +100,7 @@ cat skills/CATALOG.json | head -50      # browse the skill index
 
 ## Skill Categories
 
-ScienceClaw ships with **266 skills** organized across these domains.
+ScienceClaw ships with **275 skills** organized across these domains.
 
 **New skills** added in the latest release:
 
